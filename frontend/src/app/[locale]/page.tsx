@@ -2,16 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Search } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { ArrowRight, Truck, RefreshCw, Shield, Award, ShoppingCart, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useRef } from "react";
 
 export default function HomePage() {
   const params = useParams();
-  const router = useRouter();
   const locale = (params?.locale as string) || "tr";
   const isTr = locale === "tr";
-  const [searchQuery, setSearchQuery] = useState("");
+  const reviewsRef = useRef<HTMLDivElement>(null);
 
   const categories = [
     {
@@ -49,6 +48,7 @@ export default function HomePage() {
       oldPrice: isTr ? "₺899.90" : "$49.99",
       rating: 4.6,
       desc: isTr ? "Gürültü engelleyici, odaklanma için." : "Noise cancelling, for focus.",
+      tag: "Focus",
     },
     {
       name: isTr ? "Mavi Işık Gözlüğü" : "Blue Light Glasses",
@@ -58,6 +58,7 @@ export default function HomePage() {
       oldPrice: isTr ? "₺349.90" : "$19.99",
       rating: 4.4,
       desc: isTr ? "Mavi ışığı filtrele, uyku kaliteni artır." : "Filter blue light, improve sleep.",
+      tag: "Calm",
     },
     {
       name: isTr ? "Beyaz Gürültü Makinesi" : "White Noise Machine",
@@ -67,55 +68,105 @@ export default function HomePage() {
       oldPrice: isTr ? "₺599.90" : "$34.99",
       rating: 4.7,
       desc: isTr ? "20+ ses modu, derin odaklanma." : "20+ sound modes, deep focus.",
+      tag: "Focus",
     },
   ];
+
+  const tagColors: Record<string, string> = {
+    Focus: "bg-blue-100 text-blue-700",
+    Calm: "bg-purple-100 text-purple-700",
+    Organization: "bg-orange-100 text-orange-700",
+  };
+
+  const trustItems = [
+    { icon: Truck, label: isTr ? "Ücretsiz Kargo" : "Free Shipping" },
+    { icon: RefreshCw, label: isTr ? "30 Gün İade" : "30-Day Returns" },
+    { icon: Shield, label: isTr ? "Güvenli Ödeme" : "Secure Payment" },
+    { icon: Award, label: isTr ? "ADHD Uzman Onaylı" : "ADHD Expert Approved" },
+  ];
+
+  const reviews = [
+    { name: "Sarah M.", rating: 5, text: isTr ? "Fidget Cube hayatımı değiştirdi! Toplantılarda çok daha odaklıyım." : "The Fidget Cube changed my life! I'm so much more focused in meetings.", avatar: "S" },
+    { name: "Ahmet K.", rating: 5, text: isTr ? "Pomodoro zamanlayıcı ile ders çalışmam inanılmaz arttı. Telefon yerine bunu kullanıyorum." : "My study sessions improved incredibly with the Pomodoro timer. I use this instead of my phone.", avatar: "A" },
+    { name: "Emily R.", rating: 4, text: isTr ? "Gürültü engelleyici kulaklıklar ofiste odaklanmamı sağlıyor. Kesinlikle tavsiye ederim." : "The noise cancelling earbuds help me focus at the office. Absolutely recommend.", avatar: "E" },
+    { name: "Zeynep T.", rating: 5, text: isTr ? "Planlayıcı ADHD beynim için biçilmiş kaftan. Brain dump sayfaları harika!" : "The planner is perfect for my ADHD brain. Brain dump pages are amazing!", avatar: "Z" },
+    { name: "James L.", rating: 4, text: isTr ? "Beyaz gürültü makinesi uyku kalitemi çok artırdı. Artık 10 dakikada uyuyorum." : "The white noise machine greatly improved my sleep quality. I fall asleep in 10 minutes now.", avatar: "J" },
+    { name: "Deniz A.", rating: 5, text: isTr ? "Masa düzenleyici ile çalışma alanım hep temiz. ADHD'li herkes almalı!" : "My workspace is always clean with the desk organizer. Every ADHD person should get one!", avatar: "D" },
+  ];
+
+  const scrollReviews = (dir: "left" | "right") => {
+    if (!reviewsRef.current) return;
+    const amount = 340;
+    reviewsRef.current.scrollBy({ left: dir === "right" ? amount : -amount, behavior: "smooth" });
+  };
 
   return (
     <div className="bg-[#E0E7D7]">
       {/* ═══ HERO ═══ */}
-      <section className="relative min-h-[80vh] flex items-center overflow-hidden bg-gradient-to-br from-[#E0E7D7] via-[#d4ddc8] to-[#B7C396]/40">
+      <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-gradient-to-br from-[#E0E7D7] via-[#d4ddc8] to-[#B7C396]/40 pt-20">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#B7C396]/30 to-transparent" />
-        <div className="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-[#E0E7D7] to-transparent" />
 
-        <div className="relative z-10 px-6 lg:px-12 max-w-3xl">
-          <h1 className="text-6xl sm:text-7xl lg:text-8xl font-extrabold leading-[0.95] mb-6 tracking-tight">
-            <span className="text-[#2d3a2a]">{isTr ? "Odaklan" : "Focus"}</span>
-            <br />
-            <span className="text-[#5a7a52]">{isTr ? "Başar" : "Achieve"}</span>
-          </h1>
-
-          {/* Product search */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (searchQuery.trim()) router.push(`/${locale}/products?q=${encodeURIComponent(searchQuery.trim())}`);
-            }}
-            className="flex items-center max-w-md mb-8"
-          >
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7f65]" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={isTr ? "Ürün ara..." : "Search products..."}
-                className="w-full pl-11 pr-4 py-3 bg-white/60 backdrop-blur-sm border border-[#B7C396]/40 rounded-l-xl text-[#2d3a2a] placeholder:text-[#6b7f65]/60 focus:border-[#5a7a52] focus:bg-white/80 outline-none transition-all text-sm"
-              />
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left: text + buttons */}
+          <div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] mb-6 tracking-tight text-[#2d3a2a]">
+              {isTr ? (
+                <>Beynin Farklı Çalışıyor.<br /><span className="text-[#5a7a52]">Araçların da Öyle Olmalı.</span></>
+              ) : (
+                <>Your Brain Works Different.<br /><span className="text-[#5a7a52]">Your Tools Should Too.</span></>
+              )}
+            </h1>
+            <p className="text-[#4a5e44] text-base md:text-lg max-w-md mb-8 leading-relaxed">
+              {isTr
+                ? "ADHD ile yaşamı kolaylaştıran, uzman onaylı ürünler ve kişiselleştirilmiş öneriler."
+                : "Expert-approved products and personalized recommendations that make life with ADHD easier."}
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href={`/${locale}/products`}
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#5a7a52] text-white text-sm font-semibold rounded-lg hover:bg-[#4a6a44] transition-all duration-300 shadow-lg shadow-[#5a7a52]/20"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                {isTr ? "Alışverişe Başla" : "Shop Now"}
+              </Link>
+              <Link
+                href={`/${locale}/assessment`}
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-white/70 backdrop-blur-sm text-[#2d3a2a] text-sm font-semibold rounded-lg border border-[#B7C396]/40 hover:bg-white hover:border-[#5a7a52] transition-all duration-300"
+              >
+                {isTr ? "ADHD Testini Çöz" : "Take ADHD Test"}
+              </Link>
             </div>
-            <button
-              type="submit"
-              className="px-5 py-3 bg-[#5a7a52] text-white text-sm font-semibold rounded-r-xl hover:bg-[#4a6a44] transition-colors"
-            >
-              {isTr ? "Ara" : "Search"}
-            </button>
-          </form>
+          </div>
 
-          <Link
-            href={`/${locale}/assessment`}
-            className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#5a7a52] text-white text-sm font-semibold rounded-lg hover:bg-[#4a6a44] transition-all duration-300 shadow-lg shadow-[#5a7a52]/20"
-          >
-            {isTr ? "ADHD Testini Başlat" : "Start ADHD Test"}
-          </Link>
+          {/* Right: product collage */}
+          <div className="relative hidden lg:block h-[420px]">
+            <div className="absolute top-0 right-0 w-52 h-52 bg-white/60 backdrop-blur-sm rounded-2xl border border-[#B7C396]/30 overflow-hidden shadow-lg rotate-3 hover:rotate-0 transition-transform duration-500">
+              <Image src="/products/fidget-cube.png" alt="Fidget Cube" fill className="object-contain p-4" />
+            </div>
+            <div className="absolute top-16 left-8 w-56 h-56 bg-white/60 backdrop-blur-sm rounded-2xl border border-[#B7C396]/30 overflow-hidden shadow-lg -rotate-2 hover:rotate-0 transition-transform duration-500">
+              <Image src="/products/pomodoro-timer.png" alt="Timer" fill className="object-contain p-4" />
+            </div>
+            <div className="absolute bottom-0 right-12 w-48 h-48 bg-white/60 backdrop-blur-sm rounded-2xl border border-[#B7C396]/30 overflow-hidden shadow-lg rotate-1 hover:rotate-0 transition-transform duration-500">
+              <Image src="/products/noise-cancel-earbuds.png" alt="Earbuds" fill className="object-contain p-4" />
+            </div>
+            <div className="absolute bottom-10 left-0 w-44 h-44 bg-white/60 backdrop-blur-sm rounded-2xl border border-[#B7C396]/30 overflow-hidden shadow-lg -rotate-3 hover:rotate-0 transition-transform duration-500">
+              <Image src="/products/focus-planner.png" alt="Planner" fill className="object-contain p-4" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ TRUST BAR ═══ */}
+      <section className="bg-white/60 backdrop-blur-sm border-y border-[#B7C396]/20">
+        <div className="max-w-6xl mx-auto px-6 lg:px-10 py-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {trustItems.map((item) => (
+              <div key={item.label} className="flex items-center justify-center gap-3 py-2">
+                <item.icon className="w-5 h-5 text-[#5a7a52] flex-shrink-0" />
+                <span className="text-sm font-medium text-[#2d3a2a]">{item.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -138,7 +189,7 @@ export default function HomePage() {
               <Link
                 key={cat.slug}
                 href={`/${locale}/products/${cat.slug}`}
-                className="group bg-white/70 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-white hover:shadow-md transition-all duration-300 border border-[#B7C396]/30"
+                className="group bg-white/70 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-white hover:shadow-md hover:scale-[1.02] transition-all duration-300 border border-[#B7C396]/30"
               >
                 <div className="relative h-48 bg-[#E0E7D7]/60 overflow-hidden">
                   <Image
@@ -175,37 +226,47 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredProducts.map((product) => (
-              <Link
+              <div
                 key={product.slug}
-                href={`/${locale}/products/${product.slug}`}
-                className="group bg-white/70 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-white hover:shadow-md transition-all duration-300 border border-[#B7C396]/30"
+                className="group bg-white/70 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-white hover:shadow-lg hover:scale-[1.03] transition-all duration-300 border border-[#B7C396]/30"
               >
-                <div className="relative h-56 bg-[#E0E7D7]/40 overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-6 group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
+                <Link href={`/${locale}/products/${product.slug}`} className="block">
+                  <div className="relative h-56 bg-[#E0E7D7]/40 overflow-hidden">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-contain p-6 group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                    <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-semibold ${tagColors[product.tag]}`}>
+                      {product.tag}
+                    </span>
+                  </div>
+                </Link>
                 <div className="p-5">
                   <div className="flex items-center gap-1 mb-2">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <svg key={star} className={`w-3.5 h-3.5 ${star <= Math.round(product.rating) ? "text-yellow-500" : "text-[#B7C396]/40"}`} fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
+                      <Star key={star} className={`w-3.5 h-3.5 ${star <= Math.round(product.rating) ? "text-yellow-500 fill-yellow-500" : "text-[#B7C396]/40"}`} />
                     ))}
                     <span className="text-xs text-[#6b7f65] ml-1">{product.rating}</span>
                   </div>
-                  <h3 className="text-lg font-bold text-[#2d3a2a] group-hover:text-[#5a7a52] transition-colors mb-1">{product.name}</h3>
+                  <Link href={`/${locale}/products/${product.slug}`}>
+                    <h3 className="text-lg font-bold text-[#2d3a2a] group-hover:text-[#5a7a52] transition-colors mb-1">{product.name}</h3>
+                  </Link>
                   <p className="text-sm text-[#6b7f65] mb-3">{product.desc}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-[#2d3a2a]">{product.price}</span>
-                    <span className="text-sm text-[#B7C396] line-through">{product.oldPrice}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold text-[#2d3a2a]">{product.price}</span>
+                      <span className="text-sm text-[#B7C396] line-through">{product.oldPrice}</span>
+                    </div>
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#5a7a52] text-white text-xs font-semibold rounded-lg hover:bg-[#4a6a44] transition-colors">
+                      <ShoppingCart className="w-3.5 h-3.5" />
+                      {isTr ? "Sepete Ekle" : "Add to Cart"}
+                    </button>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
 
@@ -221,8 +282,66 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ═══ CUSTOMER REVIEWS ═══ */}
+      <section className="py-16 bg-[#E0E7D7]">
+        <div className="max-w-6xl mx-auto px-6 lg:px-10">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#2d3a2a] mb-2 italic font-serif">
+                {isTr ? "Müşteri Yorumları" : "Customer Reviews"}
+              </h2>
+              <p className="text-[#6b7f65] text-sm">
+                {isTr ? "ADHD topluluğumuzdan gerçek deneyimler." : "Real experiences from our ADHD community."}
+              </p>
+            </div>
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                onClick={() => scrollReviews("left")}
+                className="p-2 rounded-full bg-white/70 border border-[#B7C396]/30 text-[#2d3a2a] hover:bg-white hover:shadow transition-all"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => scrollReviews("right")}
+                className="p-2 rounded-full bg-white/70 border border-[#B7C396]/30 text-[#2d3a2a] hover:bg-white hover:shadow transition-all"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div
+            ref={reviewsRef}
+            className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {reviews.map((review, i) => (
+              <div
+                key={i}
+                className="flex-shrink-0 w-[310px] bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-[#B7C396]/30 snap-start hover:bg-white hover:shadow-md transition-all duration-300"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-[#5a7a52] flex items-center justify-center">
+                    <span className="text-sm font-bold text-white">{review.avatar}</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#2d3a2a] text-sm">{review.name}</p>
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} className={`w-3 h-3 ${star <= review.rating ? "text-yellow-500 fill-yellow-500" : "text-[#B7C396]/40"}`} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-sm text-[#4a5e44] leading-relaxed">&ldquo;{review.text}&rdquo;</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ═══ ASSESSMENT CTA ═══ */}
-      <section className="py-20 bg-[#E0E7D7]">
+      <section className="py-20 bg-white/50">
         <div className="max-w-4xl mx-auto px-6 lg:px-10 text-center">
           <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-10 md:p-14 border border-[#B7C396]/30">
             <p className="text-[#5a7a52] text-xs uppercase tracking-[0.2em] font-semibold mb-3">
