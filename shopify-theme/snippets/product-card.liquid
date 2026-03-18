@@ -1,0 +1,341 @@
+{% comment %}
+  Product Card Snippet
+  Accepts: product (Shopify product object)
+  Usage: {% render 'product-card', product: product %}
+{% endcomment %}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign compare_at_price = current_variant.compare_at_price
+  assign price = current_variant.price
+  assign on_sale = false
+  if compare_at_price > price
+    assign on_sale = true
+    assign discount_percent = compare_at_price | minus: price | times: 100.0 | divided_by: compare_at_price | round
+  endif
+
+  assign category_tag = ''
+  for tag in product.tags
+    assign tag_lower = tag | downcase
+    if tag_lower == 'focus' or tag_lower == 'odak'
+      assign category_tag = 'Focus'
+    elsif tag_lower == 'calm' or tag_lower == 'sakin'
+      assign category_tag = 'Calm'
+    elsif tag_lower == 'organization' or tag_lower == 'organizasyon'
+      assign category_tag = 'Organization'
+    endif
+  endfor
+
+  assign rating = product.metafields.reviews.rating.value | default: 0
+-%}
+
+<div class="product-card" data-product-id="{{ product.id }}">
+  <div class="product-card__media">
+    <a href="{{ product.url }}" class="product-card__image-link">
+      {%- if product.featured_image != blank -%}
+        <img
+          src="{{ product.featured_image | image_url: width: 600 }}"
+          alt="{{ product.featured_image.alt | escape }}"
+          width="{{ product.featured_image.width }}"
+          height="{{ product.featured_image.height }}"
+          loading="lazy"
+          class="product-card__image"
+        >
+        {%- if product.images[1] != blank -%}
+          <img
+            src="{{ product.images[1] | image_url: width: 600 }}"
+            alt="{{ product.images[1].alt | escape }}"
+            width="{{ product.images[1].width }}"
+            height="{{ product.images[1].height }}"
+            loading="lazy"
+            class="product-card__image product-card__image--hover"
+          >
+        {%- endif -%}
+      {%- else -%}
+        {{ 'product-1' | placeholder_svg_tag: 'product-card__placeholder' }}
+      {%- endif -%}
+    </a>
+
+    {%- if on_sale -%}
+      <span class="product-card__badge product-card__badge--sale">
+        %{{ discount_percent }} {{ 'products.product.sale' | t }}
+      </span>
+    {%- endif -%}
+
+    {%- if product.available == false -%}
+      <span class="product-card__badge product-card__badge--soldout">
+        {{ 'products.product.sold_out' | t }}
+      </span>
+    {%- endif -%}
+
+    {%- if category_tag != blank -%}
+      <span class="product-card__category-tag product-card__category-tag--{{ category_tag | downcase }}">
+        {{ category_tag }}
+      </span>
+    {%- endif -%}
+  </div>
+
+  <div class="product-card__info">
+    {%- if rating > 0 -%}
+      <div class="product-card__rating">
+        {% render 'star-rating', rating: rating %}
+      </div>
+    {%- endif -%}
+
+    <h3 class="product-card__title">
+      <a href="{{ product.url }}">{{ product.title }}</a>
+    </h3>
+
+    {%- if product.description != blank -%}
+      <p class="product-card__description">
+        {{ product.description | strip_html | truncatewords: 15 }}
+      </p>
+    {%- endif -%}
+
+    <div class="product-card__price">
+      {%- if on_sale -%}
+        <span class="product-card__price--compare">
+          {{ compare_at_price | money }}
+        </span>
+      {%- endif -%}
+      <span class="product-card__price--current {% if on_sale %}product-card__price--on-sale{% endif %}">
+        {{ price | money }}
+      </span>
+    </div>
+
+    {%- if product.available -%}
+      <button
+        type="button"
+        class="product-card__add-to-cart btn btn--primary"
+        data-variant-id="{{ current_variant.id }}"
+        aria-label="{{ 'products.product.add_to_cart' | t }} - {{ product.title }}"
+      >
+        {{ 'products.product.add_to_cart' | t }}
+      </button>
+    {%- else -%}
+      <button
+        type="button"
+        class="product-card__add-to-cart btn btn--disabled"
+        disabled
+      >
+        {{ 'products.product.sold_out' | t }}
+      </button>
+    {%- endif -%}
+  </div>
+</div>
+
+<style>
+  .product-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .product-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .product-card__media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+  }
+
+  .product-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  .product-card__image--hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+  }
+
+  .product-card:hover .product-card__image--hover {
+    opacity: 1;
+  }
+
+  .product-card:hover .product-card__image:not(.product-card__image--hover) {
+    transform: scale(1.08);
+  }
+
+  .product-card__badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  .product-card__badge--sale {
+    background: #e74c3c;
+    color: #fff;
+  }
+
+  .product-card__badge--soldout {
+    background: #95a5a6;
+    color: #fff;
+  }
+
+  .product-card__category-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  .product-card__category-tag--focus {
+    background: rgba(90, 122, 82, 0.15);
+    color: #5a7a52;
+  }
+
+  .product-card__category-tag--calm {
+    background: rgba(183, 195, 150, 0.3);
+    color: #5a6e3a;
+  }
+
+  .product-card__category-tag--organization {
+    background: rgba(45, 58, 42, 0.1);
+    color: #2d3a2a;
+  }
+
+  .product-card__info {
+    padding: 16px;
+  }
+
+  .product-card__title {
+    margin: 8px 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .product-card__title a {
+    color: var(--color-text, #2d3a2a);
+    text-decoration: none;
+  }
+
+  .product-card__title a:hover {
+    color: var(--color-primary, #5a7a52);
+  }
+
+  .product-card__description {
+    font-size: 13px;
+    color: #6b7c68;
+    line-height: 1.5;
+    margin: 4px 0 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .product-card__price {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .product-card__price--current {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-text, #2d3a2a);
+  }
+
+  .product-card__price--on-sale {
+    color: #e74c3c;
+  }
+
+  .product-card__price--compare {
+    font-size: 14px;
+    color: #95a5a6;
+    text-decoration: line-through;
+  }
+
+  .product-card__add-to-cart {
+    width: 100%;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn--primary {
+    background: var(--color-primary, #5a7a52);
+    color: #fff;
+  }
+
+  .btn--primary:hover {
+    background: var(--color-text, #2d3a2a);
+    transform: translateY(-1px);
+  }
+
+  .btn--disabled {
+    background: #d5dbd3;
+    color: #95a5a6;
+    cursor: not-allowed;
+  }
+
+  .product-card__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #f0f0f0;
+  }
+</style>
+
+<script>
+  (function() {
+    document.querySelectorAll('.product-card__add-to-cart:not([disabled])').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var variantId = this.dataset.variantId;
+        var button = this;
+        var originalText = button.textContent;
+
+        button.disabled = true;
+        button.textContent = '...';
+
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: variantId, quantity: 1 })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          button.textContent = '✓';
+          document.dispatchEvent(new CustomEvent('cart:updated'));
+          setTimeout(function() {
+            button.textContent = originalText;
+            button.disabled = false;
+          }, 1500);
+        })
+        .catch(function(error) {
+          button.textContent = originalText;
+          button.disabled = false;
+          console.error('Add to cart error:', error);
+        });
+      });
+    });
+  })();
+</script>

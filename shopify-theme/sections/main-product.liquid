@@ -1,0 +1,540 @@
+<style>
+  .main-product-section {
+    background: #E0E7D7;
+    padding: 40px 0 80px;
+  }
+  .main-product-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .main-product-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .main-product-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+  }
+
+  /* Image */
+  .mp-image-wrap {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .mp-image-wrap img {
+    width: 100%;
+    display: block;
+  }
+  .mp-image-placeholder {
+    aspect-ratio: 1;
+    background: #f0f4eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mp-discount-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: #e74c3c;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    z-index: 2;
+  }
+  .mp-thumbnails {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .mp-thumb {
+    width: 80px;
+    height: 80px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+  }
+  .mp-thumb--active {
+    border-color: #5a7a52;
+  }
+  .mp-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Info */
+  .mp-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .mp-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    color: #2d3a2a;
+    line-height: 1.2;
+  }
+  .mp-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .mp-tag {
+    background: #B7C396;
+    color: #2d3a2a;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .mp-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #e8b931;
+    font-size: 1rem;
+  }
+  .mp-rating-count {
+    color: #2d3a2a;
+    opacity: 0.6;
+    font-size: 0.85rem;
+  }
+  .mp-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .mp-price-current {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #5a7a52;
+  }
+  .mp-price-compare {
+    font-size: 1.1rem;
+    color: #2d3a2a;
+    opacity: 0.4;
+    text-decoration: line-through;
+  }
+  .mp-description {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #2d3a2a;
+    opacity: 0.8;
+  }
+
+  /* Benefits */
+  .mp-benefits {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .mp-benefit {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #2d3a2a;
+  }
+  .mp-benefit-check {
+    color: #5a7a52;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  /* Variant Selector */
+  .mp-variant-select {
+    padding: 12px 16px;
+    border: 1.5px solid rgba(45, 58, 42, 0.2);
+    border-radius: 10px;
+    background: #fff;
+    color: #2d3a2a;
+    font-size: 0.95rem;
+    width: 100%;
+    max-width: 300px;
+    cursor: pointer;
+  }
+
+  /* Quantity */
+  .mp-qty-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .mp-qty-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2d3a2a;
+  }
+  .mp-qty-controls {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid rgba(45, 58, 42, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .mp-qty-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #2d3a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .mp-qty-btn:hover {
+    background: #f0f4eb;
+  }
+  .mp-qty-input {
+    width: 48px;
+    text-align: center;
+    border: none;
+    border-left: 1px solid rgba(45, 58, 42, 0.15);
+    border-right: 1px solid rgba(45, 58, 42, 0.15);
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3a2a;
+    background: #fff;
+    -moz-appearance: textfield;
+  }
+  .mp-qty-input::-webkit-outer-spin-button,
+  .mp-qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+
+  /* Buttons */
+  .mp-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .mp-add-to-cart {
+    width: 100%;
+    padding: 18px;
+    background: #5a7a52;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .mp-add-to-cart:hover {
+    background: #4a6a44;
+  }
+  .mp-add-to-cart:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  .mp-buy-now {
+    width: 100%;
+    padding: 16px;
+    background: transparent;
+    color: #5a7a52;
+    border: 2px solid #5a7a52;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    display: block;
+    transition: all 0.2s;
+  }
+  .mp-buy-now:hover {
+    background: #5a7a52;
+    color: #fff;
+  }
+
+  /* Trust icons */
+  .mp-trust-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 20px 0;
+    border-top: 1px solid rgba(45, 58, 42, 0.1);
+    border-bottom: 1px solid rgba(45, 58, 42, 0.1);
+  }
+  .mp-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #2d3a2a;
+    opacity: 0.7;
+  }
+  .mp-trust-icon {
+    font-size: 1.1rem;
+  }
+  @media (max-width: 480px) {
+    .mp-trust-row {
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+  }
+
+  /* Description Tabs */
+  .mp-tabs {
+    margin-top: 48px;
+  }
+  .mp-tab-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid rgba(45, 58, 42, 0.1);
+  }
+  .mp-tab-btn {
+    padding: 14px 24px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2d3a2a;
+    opacity: 0.5;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mp-tab-btn.active {
+    opacity: 1;
+    border-bottom-color: #5a7a52;
+    color: #5a7a52;
+  }
+  .mp-tab-content {
+    display: none;
+    padding: 24px 0;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #2d3a2a;
+  }
+  .mp-tab-content.active {
+    display: block;
+  }
+</style>
+
+{%- assign current_variant = product.selected_or_first_available_variant -%}
+
+<section class="main-product-section" data-section-id="{{ section.id }}">
+  <div class="main-product-inner">
+    <div class="main-product-grid">
+      <!-- Product Image -->
+      <div>
+        <div class="mp-image-wrap">
+          {% if product.featured_image != blank %}
+            <img
+              id="mp-main-image-{{ section.id }}"
+              src="{{ product.featured_image | image_url: width: 800 }}"
+              alt="{{ product.featured_image.alt | escape }}"
+              width="800"
+              height="800"
+            >
+          {% else %}
+            <div class="mp-image-placeholder">
+              {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+            </div>
+          {% endif %}
+
+          {% if product.compare_at_price > product.price %}
+            {%- assign discount = product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price | round -%}
+            <span class="mp-discount-badge">-{{ discount }}%</span>
+          {% endif %}
+        </div>
+
+        {% if product.images.size > 1 %}
+          <div class="mp-thumbnails">
+            {% for image in product.images %}
+              <button
+                class="mp-thumb {% if forloop.first %}mp-thumb--active{% endif %}"
+                data-image-url="{{ image | image_url: width: 800 }}"
+                onclick="(function(btn){var img=document.getElementById('mp-main-image-{{ section.id }}');if(img)img.src=btn.dataset.imageUrl;btn.closest('.mp-thumbnails').querySelectorAll('.mp-thumb').forEach(function(t){t.classList.remove('mp-thumb--active')});btn.classList.add('mp-thumb--active');})(this)"
+                aria-label="View image {{ forloop.index }}"
+              >
+                <img src="{{ image | image_url: width: 120 }}" alt="{{ image.alt | escape }}" width="80" height="80" loading="lazy">
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Product Info -->
+      <div class="mp-info">
+        <h1 class="mp-title">{{ product.title }}</h1>
+
+        {% if product.tags.size > 0 %}
+          <div class="mp-tags">
+            {% for tag in product.tags limit: 4 %}
+              <span class="mp-tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="mp-rating">
+          &#9733;&#9733;&#9733;&#9733;&#9733;
+          <span class="mp-rating-count">({{ section.settings.review_count }} reviews)</span>
+        </div>
+
+        <div class="mp-price-row">
+          <span class="mp-price-current">{{ current_variant.price | money }}</span>
+          {% if current_variant.compare_at_price > current_variant.price %}
+            <span class="mp-price-compare">{{ current_variant.compare_at_price | money }}</span>
+          {% endif %}
+        </div>
+
+        <div class="mp-description">
+          {{ product.description | strip_html | truncate: 300 }}
+        </div>
+
+        <!-- Benefits -->
+        <div class="mp-benefits">
+          {% for block in section.blocks %}
+            {% if block.type == 'benefit' %}
+              <div class="mp-benefit" {{ block.shopify_attributes }}>
+                <span class="mp-benefit-check">&#10003;</span>
+                <span>{{ block.settings.text }}</span>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <!-- Add to Cart Form -->
+        {% form 'product', product %}
+          {% if product.variants.size > 1 %}
+            <select class="mp-variant-select" name="id">
+              {% for variant in product.variants %}
+                <option value="{{ variant.id }}" {% if variant == current_variant %}selected{% endif %}>
+                  {{ variant.title }} - {{ variant.price | money }}
+                </option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <input type="hidden" name="id" value="{{ current_variant.id }}">
+          {% endif %}
+
+          <div class="mp-qty-wrap">
+            <span class="mp-qty-label">Quantity</span>
+            <div class="mp-qty-controls">
+              <button class="mp-qty-btn" type="button" aria-label="Decrease" onclick="(function(btn){var inp=btn.parentNode.querySelector('input');var v=parseInt(inp.value);if(v>1)inp.value=v-1;})(this)">-</button>
+              <input class="mp-qty-input" type="number" name="quantity" value="1" min="1" max="99">
+              <button class="mp-qty-btn" type="button" aria-label="Increase" onclick="(function(btn){var inp=btn.parentNode.querySelector('input');var v=parseInt(inp.value);if(v<99)inp.value=v+1;})(this)">+</button>
+            </div>
+          </div>
+
+          <div class="mp-buttons">
+            <button type="submit" class="mp-add-to-cart" {% unless product.available %}disabled{% endunless %}>
+              {% if product.available %}Add to Cart{% else %}Sold Out{% endif %}
+            </button>
+            {% if product.available %}
+              <a href="/checkout" class="mp-buy-now">Buy Now</a>
+            {% endif %}
+          </div>
+        {% endform %}
+
+        <!-- Trust Row -->
+        <div class="mp-trust-row">
+          <div class="mp-trust-item">
+            <span class="mp-trust-icon">&#128666;</span>
+            <span>Free Shipping</span>
+          </div>
+          <div class="mp-trust-item">
+            <span class="mp-trust-icon">&#128737;</span>
+            <span>Warranty</span>
+          </div>
+          <div class="mp-trust-item">
+            <span class="mp-trust-icon">&#128260;</span>
+            <span>14-Day Return</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description Tabs -->
+    <div class="mp-tabs">
+      <div class="mp-tab-nav">
+        <button class="mp-tab-btn active" data-target="description" onclick="(function(btn){btn.closest('.mp-tabs').querySelectorAll('.mp-tab-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');btn.closest('.mp-tabs').querySelectorAll('.mp-tab-content').forEach(function(c){c.classList.remove('active')});btn.closest('.mp-tabs').querySelector('[data-tab=\'description\']').classList.add('active');})(this)">Description</button>
+        <button class="mp-tab-btn" data-target="details" onclick="(function(btn){btn.closest('.mp-tabs').querySelectorAll('.mp-tab-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');btn.closest('.mp-tabs').querySelectorAll('.mp-tab-content').forEach(function(c){c.classList.remove('active')});btn.closest('.mp-tabs').querySelector('[data-tab=\'details\']').classList.add('active');})(this)">Details</button>
+        <button class="mp-tab-btn" data-target="shipping" onclick="(function(btn){btn.closest('.mp-tabs').querySelectorAll('.mp-tab-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');btn.closest('.mp-tabs').querySelectorAll('.mp-tab-content').forEach(function(c){c.classList.remove('active')});btn.closest('.mp-tabs').querySelector('[data-tab=\'shipping\']').classList.add('active');})(this)">Shipping</button>
+      </div>
+      <div class="mp-tab-content active" data-tab="description">
+        {{ product.description }}
+      </div>
+      <div class="mp-tab-content" data-tab="details">
+        {{ section.settings.details_text }}
+      </div>
+      <div class="mp-tab-content" data-tab="shipping">
+        {{ section.settings.shipping_text }}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product Page",
+  "settings": [
+    {
+      "type": "text",
+      "id": "review_count",
+      "label": "Review Count",
+      "default": "47"
+    },
+    {
+      "type": "richtext",
+      "id": "details_text",
+      "label": "Details Tab Text",
+      "default": "<p>Product specifications and details will appear here.</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "shipping_text",
+      "label": "Shipping Tab Text",
+      "default": "<p>Free shipping on all orders. Delivery within 3-5 business days. 14-day hassle-free returns.</p>"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Benefit Text",
+          "default": "Improves Focus"
+        }
+      ]
+    }
+  ],
+  "templates": ["product"],
+  "presets": [
+    {
+      "name": "Product Page",
+      "blocks": [
+        { "type": "benefit", "settings": { "text": "Improves Focus" } },
+        { "type": "benefit", "settings": { "text": "Reduces Anxiety" } },
+        { "type": "benefit", "settings": { "text": "ADHD Friendly" } },
+        { "type": "benefit", "settings": { "text": "Premium Quality" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

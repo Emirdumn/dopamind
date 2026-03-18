@@ -1,0 +1,256 @@
+<style>
+  .footer-section {
+    background: #E0E7D7;
+    border-top: 1px solid rgba(45, 58, 42, 0.15);
+    padding: 60px 0 0;
+    color: #2d3a2a;
+  }
+  .footer-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+  }
+  @media (max-width: 768px) {
+    .footer-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+  }
+  @media (max-width: 480px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+  }
+  .footer-col-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #2d3a2a;
+    letter-spacing: 0.03em;
+  }
+  .footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .footer-col ul li {
+    margin-bottom: 10px;
+  }
+  .footer-col ul li a {
+    color: #2d3a2a;
+    text-decoration: none;
+    font-size: 0.95rem;
+    opacity: 0.8;
+    transition: opacity 0.2s, color 0.2s;
+  }
+  .footer-col ul li a:hover {
+    opacity: 1;
+    color: #5a7a52;
+  }
+  .footer-bottom {
+    margin-top: 48px;
+    padding: 20px 0;
+    border-top: 1px solid rgba(45, 58, 42, 0.12);
+    text-align: center;
+    font-size: 0.85rem;
+    opacity: 0.7;
+  }
+</style>
+
+<footer class="footer-section" data-section-id="{{ section.id }}">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <!-- Column 1: Brand -->
+      <div class="footer-col">
+        <div class="footer-col-title">{{ section.settings.col1_title }}</div>
+        <ul>
+          {% for block in section.blocks %}
+            {% if block.type == 'col1_link' %}
+              <li><a href="{{ block.settings.url }}" {{ block.shopify_attributes }}>{{ block.settings.label }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Column 2: Contact -->
+      <div class="footer-col">
+        <div class="footer-col-title">{{ section.settings.col2_title }}</div>
+        <ul>
+          {% if section.settings.contact_phone != blank %}
+            <li><a href="tel:{{ section.settings.contact_phone }}">{{ section.settings.contact_phone }}</a></li>
+          {% endif %}
+          {% if section.settings.contact_email != blank %}
+            <li><a href="mailto:{{ section.settings.contact_email }}">{{ section.settings.contact_email }}</a></li>
+          {% endif %}
+          {% if section.settings.contact_website != blank %}
+            <li><a href="https://{{ section.settings.contact_website }}" target="_blank">{{ section.settings.contact_website }}</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <!-- Column 3: Products -->
+      <div class="footer-col">
+        <div class="footer-col-title">{{ section.settings.col3_title }}</div>
+        <ul>
+          {% for block in section.blocks %}
+            {% if block.type == 'col3_link' %}
+              <li><a href="{{ block.settings.url }}" {{ block.shopify_attributes }}>{{ block.settings.label }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Column 4: Policies -->
+      <div class="footer-col">
+        <div class="footer-col-title">{{ section.settings.col4_title }}</div>
+        <ul>
+          {% for block in section.blocks %}
+            {% if block.type == 'col4_link' %}
+              <li><a href="{{ block.settings.url }}" {{ block.shopify_attributes }}>{{ block.settings.label }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      {{ section.settings.copyright_text }}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "class": "footer-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "col1_title",
+      "label": "Column 1 Title",
+      "default": "DOPAMiND"
+    },
+    {
+      "type": "text",
+      "id": "col2_title",
+      "label": "Column 2 Title",
+      "default": "Contact"
+    },
+    {
+      "type": "text",
+      "id": "contact_phone",
+      "label": "Phone",
+      "default": "+90 555 123 4567"
+    },
+    {
+      "type": "text",
+      "id": "contact_email",
+      "label": "Email",
+      "default": "info@dopamind.com.tr"
+    },
+    {
+      "type": "text",
+      "id": "contact_website",
+      "label": "Website",
+      "default": "dopamind.com.tr"
+    },
+    {
+      "type": "text",
+      "id": "col3_title",
+      "label": "Column 3 Title",
+      "default": "Products"
+    },
+    {
+      "type": "text",
+      "id": "col4_title",
+      "label": "Column 4 Title",
+      "default": "Privacy Policy"
+    },
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "Copyright Text",
+      "default": "\u00a9 ADHD DOPAMiND All Rights Reserved."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "col1_link",
+      "name": "Brand Link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "About Us"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "URL",
+          "default": "/pages/about"
+        }
+      ]
+    },
+    {
+      "type": "col3_link",
+      "name": "Product Link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "All Products"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "URL",
+          "default": "/collections/all"
+        }
+      ]
+    },
+    {
+      "type": "col4_link",
+      "name": "Policy Link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Privacy Policy"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "URL",
+          "default": "/policies/privacy-policy"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Footer",
+      "blocks": [
+        { "type": "col1_link", "settings": { "label": "About Us", "url": "/pages/about" } },
+        { "type": "col1_link", "settings": { "label": "Blog", "url": "/blogs/news" } },
+        { "type": "col1_link", "settings": { "label": "dopamind.com.tr", "url": "https://dopamind.com.tr" } },
+        { "type": "col3_link", "settings": { "label": "Fidget Cube", "url": "/collections/fidget-cube" } },
+        { "type": "col3_link", "settings": { "label": "Focus Timer", "url": "/collections/focus-timer" } },
+        { "type": "col3_link", "settings": { "label": "Planner", "url": "/collections/planner" } },
+        { "type": "col3_link", "settings": { "label": "All Products", "url": "/collections/all" } },
+        { "type": "col4_link", "settings": { "label": "Privacy Policy", "url": "/policies/privacy-policy" } },
+        { "type": "col4_link", "settings": { "label": "Cookie Policy", "url": "/pages/cookie-policy" } },
+        { "type": "col4_link", "settings": { "label": "Return Policy", "url": "/policies/refund-policy" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

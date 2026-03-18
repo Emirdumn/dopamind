@@ -1,0 +1,15 @@
+{
+  "current": {
+    "color_background": "#E0E7D7",
+    "color_text": "#2d3a2a",
+    "color_primary": "#5a7a52",
+    "color_accent": "#B7C396",
+    "heading_font": "inter_n4",
+    "body_font": "inter_n4",
+    "cart_type": "drawer",
+    "social_facebook_link": "",
+    "social_instagram_link": "",
+    "social_twitter_link": "",
+    "social_tiktok_link": ""
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "general": {
+    "search": "Ara",
+    "cart": "Sepet",
+    "menu": "Menü",
+    "close": "Kapat",
+    "home": "Ana Sayfa",
+    "products": "Ürünler",
+    "about": "Hakkımızda",
+    "blog": "Blog",
+    "account": "Hesap",
+    "login": "Giriş",
+    "register": "Kayıt Ol",
+    "logout": "Çıkış",
+    "continue_shopping": "Alışverişe Devam Et",
+    "view_all": "Tümünü Gör",
+    "free_shipping": "Ücretsiz Kargo",
+    "back": "Geri"
+  },
+  "products": {
+    "add_to_cart": "Sepete Ekle",
+    "buy_now": "Hemen Satın Al",
+    "price": "Fiyat",
+    "sold_out": "Tükendi",
+    "sale": "İndirim",
+    "in_stock": "Stokta",
+    "out_of_stock": "Stokta Yok",
+    "quantity": "Adet",
+    "description": "Açıklama",
+    "reviews": "Yorumlar",
+    "featured": "Öne Çıkan",
+    "sort_by": "Sırala",
+    "filter": "Filtrele",
+    "all": "Tümü",
+    "from": "den başlayan"
+  },
+  "cart": {
+    "title": "Sepetim",
+    "empty": "Sepetiniz boş",
+    "subtotal": "Ara Toplam",
+    "shipping": "Kargo",
+    "total": "Toplam",
+    "checkout": "Ödemeye Geç",
+    "remove": "Kaldır",
+    "update": "Güncelle",
+    "free": "Ücretsiz"
+  },
+  "customer": {
+    "login_title": "Giriş Yap",
+    "register_title": "Kayıt Ol",
+    "email": "E-posta",
+    "password": "Şifre",
+    "first_name": "Ad",
+    "last_name": "Soyad",
+    "forgot_password": "Şifremi Unuttum"
+  },
+  "layout": {
+    "skip_content": "İçeriğe geç"
+  },
+  "accessibility": {
+    "close": "Kapat",
+    "menu": "Menü",
+    "cart": "Sepet"
+  }
+}

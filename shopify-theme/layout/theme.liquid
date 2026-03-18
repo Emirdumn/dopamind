@@ -1,0 +1,442 @@
+<!doctype html>
+<html class="no-js" lang="{{ request.locale.iso_code }}" dir="{{ settings.text_direction | default: 'ltr' }}">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+
+  <title>
+    {{ page_title }}{% if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif %}{% if current_page != 1 %} &ndash; Page {{ current_page }}{% endif %}{% unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless %}
+  </title>
+
+  {% if page_description %}
+    <meta name="description" content="{{ page_description | escape }}">
+  {% endif %}
+
+  <link rel="canonical" href="{{ canonical_url }}">
+
+  {% if settings.favicon != blank %}
+    <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180, height: 180 }}">
+  {% endif %}
+
+  {% comment %} Google Fonts - Inter 300-700 {% endcomment %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  {{ content_for_header }}
+
+  {{ 'base.css' | asset_url | stylesheet_tag }}
+
+  {%- if settings.cart_type == 'drawer' -%}
+    {{ 'component-cart-drawer.css' | asset_url | stylesheet_tag }}
+  {%- endif -%}
+
+  <style>
+    :root {
+      /* Dopamind Color Palette */
+      --color-background: #E0E7D7;
+      --color-text: #2d3a2a;
+      --color-primary: #5a7a52;
+      --color-accent: #B7C396;
+      --color-menu-bg: #b8d4b8;
+
+      /* Derived Colors */
+      --color-primary-hover: #4d6a46;
+      --color-background-secondary: #d4dccb;
+      --color-border: rgba(45, 58, 42, 0.12);
+      --color-overlay: rgba(45, 58, 42, 0.4);
+      --color-selection-bg: rgba(90, 122, 82, 0.25);
+      --color-selection-text: #2d3a2a;
+
+      /* Scrollbar */
+      --scrollbar-width: 5px;
+      --scrollbar-thumb: #B7C396;
+      --scrollbar-track: #E0E7D7;
+
+      /* Typography */
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-weight-light: 300;
+      --font-weight-normal: 400;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+
+      /* Spacing */
+      --header-height: 64px;
+      --page-width: 1200px;
+      --page-gutter: 1.5rem;
+      --grid-gap: 1.5rem;
+
+      /* Transitions */
+      --transition-fast: 150ms ease;
+      --transition-base: 250ms ease;
+      --transition-slow: 400ms ease;
+
+      /* Borders */
+      --border-radius-sm: 4px;
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+      --border-radius-full: 9999px;
+    }
+
+    /* Base Reset & Globals */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-weight: var(--font-weight-normal);
+      color: var(--color-text);
+      background-color: var(--color-background);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Selection */
+    ::selection {
+      background-color: var(--color-selection-bg);
+      color: var(--color-selection-text);
+    }
+
+    ::-moz-selection {
+      background-color: var(--color-selection-bg);
+      color: var(--color-selection-text);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: var(--scrollbar-width);
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--scrollbar-track);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border-radius: var(--border-radius-full);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--color-primary);
+    }
+
+    /* Firefox scrollbar */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    }
+
+    /* Main Content */
+    main#main-content {
+      flex: 1 0 auto;
+    }
+
+    /* Skip to Content Link */
+    .skip-to-content-link {
+      position: absolute;
+      top: -100%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--color-primary);
+      color: #fff;
+      font-weight: var(--font-weight-semibold);
+      text-decoration: none;
+      border-radius: var(--border-radius-md);
+      transition: top var(--transition-fast);
+    }
+
+    .skip-to-content-link:focus {
+      top: 1rem;
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    /* Page Width Utility */
+    .page-width {
+      max-width: var(--page-width);
+      margin: 0 auto;
+      padding-left: var(--page-gutter);
+      padding-right: var(--page-gutter);
+    }
+
+    /* Cart Drawer Overlay */
+    .cart-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: var(--color-overlay);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition-base), visibility var(--transition-base);
+    }
+
+    .cart-drawer-overlay.is-active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Cart Drawer */
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 420px;
+      background-color: var(--color-background);
+      z-index: 1000;
+      transform: translateX(100%);
+      transition: transform var(--transition-base);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .cart-drawer.is-open {
+      transform: translateX(0);
+    }
+
+    .cart-drawer__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem var(--page-gutter);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .cart-drawer__title {
+      font-size: 1.125rem;
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .cart-drawer__close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-text);
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color var(--transition-fast);
+    }
+
+    .cart-drawer__close:hover {
+      color: var(--color-primary);
+    }
+
+    .cart-drawer__body {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--page-gutter);
+    }
+
+    .cart-drawer__footer {
+      padding: var(--page-gutter);
+      border-top: 1px solid var(--color-border);
+    }
+
+    /* Body scroll lock when cart drawer is open */
+    body.cart-drawer-open {
+      overflow: hidden;
+    }
+
+    /* Focus Styles */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    /* Links */
+    a {
+      color: var(--color-primary);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    a:hover {
+      color: var(--color-primary-hover);
+    }
+
+    /* Images */
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-heading);
+      font-weight: var(--font-weight-semibold);
+      line-height: 1.3;
+      color: var(--color-text);
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* Responsive */
+    @media screen and (max-width: 749px) {
+      :root {
+        --header-height: 56px;
+        --page-gutter: 1rem;
+        --grid-gap: 1rem;
+      }
+    }
+  </style>
+
+  {{ 'application.js' | asset_url | script_tag }}
+
+  <script>
+    document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+  </script>
+</head>
+
+<body class="template-{{ template.name | handle }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %}">
+
+  <a class="skip-to-content-link visually-hidden" href="#main-content">
+    {{ 'accessibility.skip_to_content' | t }}
+  </a>
+
+  {% sections 'header-group' %}
+
+  <main id="main-content" role="main" tabindex="-1">
+    {{ content_for_layout }}
+  </main>
+
+  {% sections 'footer-group' %}
+
+  {%- if settings.cart_type == 'drawer' -%}
+    <div class="cart-drawer-overlay" data-cart-overlay></div>
+    <aside class="cart-drawer" id="cart-drawer" aria-label="{{ 'cart.title' | t }}" role="dialog" aria-modal="true">
+      <div class="cart-drawer__header">
+        <h2 class="cart-drawer__title">{{ 'cart.title' | t }}</h2>
+        <button class="cart-drawer__close" data-cart-drawer-close aria-label="{{ 'accessibility.close' | t }}">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="cart-drawer__body" data-cart-drawer-body>
+        {%- comment -%} Cart items rendered via JS or section rendering API {%- endcomment -%}
+      </div>
+      <div class="cart-drawer__footer" data-cart-drawer-footer>
+        {%- comment -%} Subtotal and checkout button rendered via JS or section rendering API {%- endcomment -%}
+      </div>
+    </aside>
+
+    <script>
+      (function() {
+        const overlay = document.querySelector('[data-cart-overlay]');
+        const drawer = document.getElementById('cart-drawer');
+        const closeBtn = document.querySelector('[data-cart-drawer-close]');
+
+        function openCartDrawer() {
+          drawer.classList.add('is-open');
+          overlay.classList.add('is-active');
+          document.body.classList.add('cart-drawer-open');
+          drawer.focus();
+          trapFocus(drawer);
+        }
+
+        function closeCartDrawer() {
+          drawer.classList.remove('is-open');
+          overlay.classList.remove('is-active');
+          document.body.classList.remove('cart-drawer-open');
+        }
+
+        function trapFocus(element) {
+          const focusableEls = element.querySelectorAll(
+            'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusableEls.length === 0) return;
+
+          const firstEl = focusableEls[0];
+          const lastEl = focusableEls[focusableEls.length - 1];
+
+          element.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+              closeCartDrawer();
+              return;
+            }
+            if (e.key !== 'Tab') return;
+
+            if (e.shiftKey) {
+              if (document.activeElement === firstEl) {
+                lastEl.focus();
+                e.preventDefault();
+              }
+            } else {
+              if (document.activeElement === lastEl) {
+                firstEl.focus();
+                e.preventDefault();
+              }
+            }
+          });
+        }
+
+        if (overlay) overlay.addEventListener('click', closeCartDrawer);
+        if (closeBtn) closeBtn.addEventListener('click', closeCartDrawer);
+
+        document.addEventListener('cart:open', openCartDrawer);
+        document.addEventListener('cart:close', closeCartDrawer);
+
+        window.openCartDrawer = openCartDrawer;
+        window.closeCartDrawer = closeCartDrawer;
+      })();
+    </script>
+  {%- endif -%}
+
+  <script>
+    /* Expose Shopify cart data globally */
+    window.Shopify = window.Shopify || {};
+    window.Shopify.routes = window.Shopify.routes || {};
+    window.Shopify.routes.root = '{{ routes.root_url }}';
+    window.Shopify.locale = '{{ request.locale.iso_code }}';
+    window.Shopify.currency = {
+      active: '{{ cart.currency.iso_code }}',
+      rate: '{{ cart.currency.rate }}'
+    };
+  </script>
+</body>
+</html>
