@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { api } from "@/lib/api";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -740,26 +741,67 @@ export default function AssessmentPage() {
     }
   };
 
-  const runAnalysis = () => {
+  const runAnalysis = async () => {
     setIsAnalyzing(true);
-    // Fake analysis delay for UX
-    setTimeout(() => {
-      const profile: UserProfile = {
-        screenTime: (answers.screenTime as string) || "",
-        age: (answers.age as string) || "",
-        gender: (answers.gender as string) || "",
-        education: (answers.education as string) || "",
-        employment: (answers.employment as string) || "",
-        profession: (answers.profession as string) || "",
-        challenges: (answers.challenges as string[]) || [],
-        focusDuration: (answers.focusDuration as string) || "",
-        sleepQuality: (answers.sleepQuality as string) || "",
-        stressLevel: (answers.stressLevel as string) || "",
-      };
+    const profile: UserProfile = {
+      screenTime: (answers.screenTime as string) || "",
+      age: (answers.age as string) || "",
+      gender: (answers.gender as string) || "",
+      education: (answers.education as string) || "",
+      employment: (answers.employment as string) || "",
+      profession: (answers.profession as string) || "",
+      challenges: (answers.challenges as string[]) || [],
+      focusDuration: (answers.focusDuration as string) || "",
+      sleepQuality: (answers.sleepQuality as string) || "",
+      stressLevel: (answers.stressLevel as string) || "",
+    };
+
+    // Call ML API for real ADHD prediction
+    try {
+      const mlResult = await api.assessADHD({
+        age: profile.age,
+        gender: profile.gender,
+        answers: {
+          screenTime: profile.screenTime,
+          focusDuration: profile.focusDuration,
+          sleepQuality: profile.sleepQuality,
+          stressLevel: profile.stressLevel,
+          challenges: profile.challenges,
+          education: profile.education,
+          employment: profile.employment,
+          profession: profile.profession,
+        },
+      });
+
+      // Merge ML prediction into the local analysis
+      const localResult = analyzeProfile(profile, locale);
+      // Override risk level and score with ML model output
+      localResult.riskLevel = mlResult.adhd_risk;
+      localResult.riskScore = Math.round(mlResult.adhd_probability * 100);
+      const isTr = locale === "tr";
+      localResult.summary = isTr
+        ? `Yapay zeka modelimiz ADHD olasılığınızı %${localResult.riskScore} olarak hesapladı. ${
+            mlResult.adhd_risk === "high"
+              ? "Sonuçlarınız yüksek risk gösteriyor, bir uzmana başvurmanızı öneririz."
+              : mlResult.adhd_risk === "moderate"
+              ? "Orta düzey risk tespit edildi, detaylı değerlendirme faydalı olabilir."
+              : "Düşük risk tespit edildi, ancak endişeleriniz varsa bir uzmana danışın."
+          }`
+        : `Our AI model calculated your ADHD probability at ${localResult.riskScore}%. ${
+            mlResult.adhd_risk === "high"
+              ? "Your results indicate high risk, we recommend consulting a specialist."
+              : mlResult.adhd_risk === "moderate"
+              ? "Moderate risk detected, a detailed evaluation may be beneficial."
+              : "Low risk detected, but consult a specialist if you have concerns."
+          }`;
+      setResult(localResult);
+    } catch {
+      // Fallback to local analysis if API is unavailable
       setResult(analyzeProfile(profile, locale));
-      setIsAnalyzing(false);
-      setStep(totalSteps);
-    }, 2500);
+    }
+
+    setIsAnalyzing(false);
+    setStep(totalSteps);
   };
 
   // ─── INTRO SCREEN ──────────────────────────────────────────────────

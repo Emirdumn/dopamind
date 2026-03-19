@@ -101,4 +101,17 @@ export const api = {
     fetchAPI(`/content/videos/${params ? `?${params}` : ""}`),
   getSocialLinks: () =>
     fetchAPI("/content/social/"),
+
+  // Assessment
+  assessADHD: (data: { age: string; gender: string; answers: Record<string, unknown> }) =>
+    fetchAPI<{
+      adhd_probability: number;
+      adhd_risk: "low" | "moderate" | "high";
+      model: string;
+      threshold: number;
+      subscores: Record<string, number>;
+    }>("/assessment/assess/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };

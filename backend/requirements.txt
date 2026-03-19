@@ -17,3 +17,7 @@ whitenoise==6.8.2
 python-decouple==3.8
 boto3==1.36.2
 django-extensions==3.2.3
+scikit-learn==1.6.1
+joblib==1.4.2
+numpy==2.2.3
+pandas==2.2.3
