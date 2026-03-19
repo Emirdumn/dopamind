@@ -114,4 +114,25 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+
+  // Assessment Chatbot
+  assessChatbot: (data: { message: string; context: Record<string, unknown>; locale: string }) =>
+    fetchAPI<{ response: string; locale: string }>("/assessment/chatbot/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  // Evaluate Other text
+  evaluateOther: (data: { text: string; question_id: string; locale: string }) =>
+    fetchAPI<{
+      text: string;
+      question_id: string;
+      adhd_relevance: number;
+      categories: Record<string, { score: number; matched: string[]; weight: number }>;
+      matched_keywords: string[];
+      clinical_note: string;
+    }>("/assessment/evaluate-other/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };
