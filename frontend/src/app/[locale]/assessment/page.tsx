@@ -939,6 +939,11 @@ export default function AssessmentPage() {
   const totalSteps = questions.length;
   const currentQ = step >= 0 && step < totalSteps ? questions[step] : null;
 
+  // Scroll to top on mobile when navigating between questions
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
   const handleSelect = (value: string) => {
     if (!currentQ) return;
     if (currentQ.type === "multi") {
