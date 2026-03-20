@@ -4,10 +4,8 @@ import { useParams } from "next/navigation";
 import {
   Globe,
   Package,
-  Truck,
   Shield,
   Search,
-  CheckCircle,
   ArrowRight,
   Factory,
   ShoppingBag,

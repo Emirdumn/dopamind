@@ -2,6 +2,12 @@
 
 ADHD odakli, cok dilli (TR/EN) bir e-ticaret ve icerik platformu.
 
+## ArabaIQ (Segmento)
+
+Aynı monorepo içinde **ArabaIQ** araç kıyaslama / piyasa özeti API’si: [`araba-iq-api/README.md`](araba-iq-api/README.md). Veritabanı `docker compose` ile **5433** portunda ayrı PostgreSQL konteynerinde çalışır (`araba-iq-db`).
+
+Next.js tarafında **öneriler + karşılaştırma** UI’si: i18n kuralları, preset metinleri, bilinen sınırlar ve smoke test listesi için bkz. [`frontend/docs/araba-iq-ui-i18n.md`](frontend/docs/araba-iq-ui-i18n.md). Değişiklik özeti: kök [`CHANGELOG.md`](CHANGELOG.md).
+
 ## Teknoloji
 
 - **Backend**: Django 4.2 + Django REST Framework

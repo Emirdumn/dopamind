@@ -1,5 +1,10 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## ArabaIQ (recommendations + compare)
+
+- **Docs:** [`docs/araba-iq-ui-i18n.md`](docs/araba-iq-ui-i18n.md) — i18n, feature slugs, preset’ler, **current limitations**, **smoke test checklist**.
+- Repo kökünde özet kayıt: [`../CHANGELOG.md`](../CHANGELOG.md).
+
 ## Getting Started
 
 First, run the development server:

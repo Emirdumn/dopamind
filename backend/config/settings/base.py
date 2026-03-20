@@ -10,7 +10,7 @@ SECRET_KEY = config("SECRET_KEY", default="django-insecure-change-me-in-producti
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
+ALLOWED_HOSTS = ['dopamind.tr', 'www.dopamind.tr', '43.229.92.22', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     "modeltranslation",
@@ -142,7 +142,7 @@ SIMPLE_JWT = {
 # CORS
 CORS_ALLOWED_ORIGINS = config(
     "CORS_ALLOWED_ORIGINS",
-    default="http://localhost:3000,http://127.0.0.1:3000",
+    default="http://localhost:3000,http://127.0.0.1:3000,https://dopamind.tr,https://www.dopamind.tr",
     cast=Csv(),
 )
 CORS_ALLOW_CREDENTIALS = True

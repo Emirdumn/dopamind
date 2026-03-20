@@ -53,10 +53,12 @@ export default function Header({ messages }: HeaderProps) {
 
   const navLinks = [
     { href: `/${locale}/assessment`, label: locale === "tr" ? "ADHD Test" : "ADHD Test", num: "01" },
-    { href: `/${locale}/products`, label: messages.products, num: "02" },
-    { href: `/${locale}/content`, label: messages.content, num: "03" },
-    { href: `/${locale}/operations`, label: locale === "tr" ? "Operasyon" : "Operations", num: "04" },
-    { href: `/${locale}/about`, label: messages.about, num: "05" },
+    { href: `/${locale}/recommendations`, label: locale === "tr" ? "ArabaIQ · Öneri" : "ArabaIQ · Recommend", num: "02" },
+    { href: `/${locale}/compare`, label: locale === "tr" ? "Karşılaştır" : "Compare", num: "03" },
+    { href: `/${locale}/products`, label: messages.products, num: "04" },
+    { href: `/${locale}/content`, label: messages.content, num: "05" },
+    { href: `/${locale}/operations`, label: locale === "tr" ? "Operasyon" : "Operations", num: "06" },
+    { href: `/${locale}/about`, label: messages.about, num: "07" },
   ];
 
   return (

@@ -6,8 +6,7 @@ import Image from "next/image";
 import { ShoppingCart, ArrowLeft, Star, Truck, Shield, RefreshCw, Package, Check } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
-const ALL_PRODUCTS = {
-  tr: {
+const ALL_PRODUCTS_TR = {
     "fidget-cube-stres-kupu": {
       id: "1",
       name: "Fidget Cube - 6 Yüzlü Stres Küpü",
@@ -274,11 +273,14 @@ Set 4 farklı renk ve tasarımda yüzük içerir. Her biri farklı bir dokunsal 
       benefits: ["Gizlice kullanılır", "4 farklı tasarım", "Ayarlanabilir boyut", "Su geçirmez"],
       source: "Çin üretim, CE sertifikalı, SGS test raporu",
     },
-  },
-  en: {} as Record<string, typeof ALL_PRODUCTS.tr[keyof typeof ALL_PRODUCTS.tr]>,
 };
 
-type Product = typeof ALL_PRODUCTS.tr[keyof typeof ALL_PRODUCTS.tr];
+type Product = (typeof ALL_PRODUCTS_TR)[keyof typeof ALL_PRODUCTS_TR];
+
+const ALL_PRODUCTS = {
+  tr: ALL_PRODUCTS_TR,
+  en: {} as Record<string, Product>,
+};
 
 export default function ProductDetailPage() {
   const params = useParams();

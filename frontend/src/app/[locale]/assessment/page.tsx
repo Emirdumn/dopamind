@@ -20,7 +20,6 @@ import {
   Sparkles,
   Target,
   ShoppingCart,
-  Star,
   AlertTriangle,
   TrendingUp,
   Coffee,
