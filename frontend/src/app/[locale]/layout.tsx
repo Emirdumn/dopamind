@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import CartSidebar from "@/components/cart/CartSidebar";
 
-const locales = ["tr", "en", "es", "ru", "ar", "zh", "id"];
+const locales = ["tr", "en"];
 
 type Props = {
   children: React.ReactNode;
@@ -16,15 +15,15 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const isTr = params.locale === "tr";
   return {
     title: {
-      template: "%s | Dopamind",
-      default: "Dopamind",
+      template: "%s | ArabaIQ",
+      default: "ArabaIQ",
     },
-    description:
-      params.locale === "tr"
-        ? "ADHD ile yaşamı kolaylaştıran ürünler ve içerikler"
-        : "Products and content that make life with ADHD easier",
+    description: isTr
+      ? "Veriye dayalı araç önerileri ve karşılaştırma."
+      : "Data-driven car recommendations and comparison.",
   };
 }
 
@@ -46,11 +45,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages(locale);
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Header messages={messages.common} />
-      <CartSidebar messages={messages.cart} />
-      <main>{children}</main>
-      <Footer messages={messages.footer} commonMessages={messages.common} locale={locale} />
-    </>
+      <main className="flex-1">{children}</main>
+      <Footer messages={messages.footer} locale={locale} />
+    </div>
   );
 }

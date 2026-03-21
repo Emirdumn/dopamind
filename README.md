@@ -1,51 +1,37 @@
-# ADHD Focus Store
+# ArabaIQ
 
-ADHD odakli, cok dilli (TR/EN) bir e-ticaret ve icerik platformu.
+**ArabaIQ** is a standalone product for **AI-assisted car recommendations** and **side-by-side comparison**, backed by a dedicated **FastAPI** service and a **Next.js** web app.
 
-## ArabaIQ (Segmento)
+| Layer | Path | Stack |
+|--------|------|--------|
+| API | [`araba-iq-api/`](araba-iq-api/README.md) | FastAPI, PostgreSQL, SQLAlchemy 2, Alembic |
+| Web | [`frontend/`](frontend/README.md) | Next.js 14, Tailwind CSS |
+| Docs | [`docs/`](docs/) | Product notes, pipeline, UI/i18n |
 
-Aynı monorepo içinde **ArabaIQ** araç kıyaslama / piyasa özeti API’si: [`araba-iq-api/README.md`](araba-iq-api/README.md). Veritabanı `docker compose` ile **5433** portunda ayrı PostgreSQL konteynerinde çalışır (`araba-iq-db`).
+## Quick start (local)
 
-Next.js tarafında **öneriler + karşılaştırma** UI’si: i18n kuralları, preset metinleri, bilinen sınırlar ve smoke test listesi için bkz. [`frontend/docs/araba-iq-ui-i18n.md`](frontend/docs/araba-iq-ui-i18n.md). Değişiklik özeti: kök [`CHANGELOG.md`](CHANGELOG.md).
-
-## Teknoloji
-
-- **Backend**: Django 4.2 + Django REST Framework
-- **Frontend**: Next.js 14 + Tailwind CSS
-- **Database**: PostgreSQL + Redis
-- **Odeme**: Stripe + Iyzico
-- **Dil**: Turkce / Ingilizce
-
-## Hizli Baslangic
-
-### Docker ile (Onerilen)
+### 1. Database
 
 ```bash
-cp .env.example .env
-# .env dosyasini duzenleyin
-docker-compose up --build
+cp .env.example .env   # optional; defaults work for local
+docker compose up -d araba-iq-db
 ```
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000/api/v1/
-- Admin Panel: http://localhost:8000/admin/
-
-### Manuel Kurulum
-
-#### Backend
+### 2. API
 
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+cd araba-iq-api
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
+alembic upgrade head
+PYTHONPATH=. python scripts/seed_demo.py   # demo data
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8100
 ```
 
-#### Frontend
+- OpenAPI: [http://localhost:8100/docs](http://localhost:8100/docs)
+
+### 3. Frontend
 
 ```bash
 cd frontend
@@ -54,40 +40,23 @@ cp .env.local.example .env.local
 npm run dev
 ```
 
-## API Endpoints
+- App: [http://localhost:3000](http://localhost:3000) (redirects to `/tr` or `/en`)
 
-| Endpoint | Aciklama |
-|----------|----------|
-| `POST /api/v1/auth/register/` | Kullanici kayit |
-| `POST /api/v1/auth/login/` | JWT giris |
-| `GET /api/v1/products/` | Urun listesi |
-| `GET /api/v1/products/:slug/` | Urun detay |
-| `GET /api/v1/products/categories/` | Kategoriler |
-| `GET/POST /api/v1/orders/cart/` | Sepet islemleri |
-| `POST /api/v1/orders/checkout/` | Siparis olustur |
-| `POST /api/v1/payments/create/` | Odeme baslat |
-| `GET /api/v1/content/articles/` | Makaleler |
-| `GET /api/v1/content/videos/` | Videolar |
+Set `NEXT_PUBLIC_ARABAIQ_API_URL` in `frontend/.env.local` to your API base (default `http://localhost:8100/api/v1`). Configure `CORS_ORIGINS` in `araba-iq-api/.env` for your web origin.
 
-## Proje Yapisi
+## Repository layout
 
 ```
-adhd-focus-store/
-  backend/               # Django REST API
-    apps/
-      accounts/          # Kullanici yonetimi
-      products/          # Urun katalogu
-      orders/            # Siparis ve sepet
-      payments/          # Odeme entegrasyonu
-      content/           # Icerik yonetimi
-      core/              # Ortak modeller
-    config/              # Django ayarlari
-  frontend/              # Next.js Web App
-    src/
-      app/[locale]/      # Sayfa routing (TR/EN)
-      components/        # UI bilesenler
-      stores/            # Zustand state
-      i18n/              # Ceviri dosyalari
-      lib/               # API client, utils
-  docker-compose.yml     # Docker yapilandirmasi
+araba-iq-api/     # REST API (segments, cars, recommendations, compare, market)
+frontend/         # Next.js UI (recommendations, compare, landing)
+docs/             # Roadmap, pipeline, UI notes
+docker-compose.yml
 ```
+
+## License
+
+Specify your license in the repository settings or add a `LICENSE` file when you publish.
+
+## Changelog
+
+See [`CHANGELOG.md`](CHANGELOG.md).

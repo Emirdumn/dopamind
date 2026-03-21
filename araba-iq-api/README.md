@@ -19,6 +19,8 @@ cp .env.example .env
 # .env içinde DATABASE_URL (varsayılan: localhost:5433)
 ```
 
+`.venv` yalnızca yerel ortamdır; kök dizindeki `.gitignore` ile repoya eklenmez ve commit edilmemelidir.
+
 Kök dizinden veritabanı:
 
 ```bash
@@ -77,7 +79,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8100
 
 Test (DB ile): `pip install -r requirements-dev.txt` → `DATABASE_URL=... pytest tests/ -v`
 
-**Frontend (Next.js):** Monorepo `frontend/` içinde `/[locale]/recommendations` ve `/[locale]/compare` bu API’ye bağlanır. `.env.local` → `NEXT_PUBLIC_ARABAIQ_API_URL=http://localhost:8100/api/v1`. Tarayıcı CORS için backend `.env` içinde `CORS_ORIGINS` (varsayılan localhost:3000).
+**Frontend (Next.js):** Aynı repodaki `frontend/` uygulaması `/[locale]/recommendations` ve `/[locale]/compare` üzerinden bu API’ye bağlanır. `.env.local` → `NEXT_PUBLIC_ARABAIQ_API_URL=http://localhost:8100/api/v1`. Tarayıcı CORS için API `.env` içinde `CORS_ORIGINS` (ör. `http://localhost:3000`).
 
 Sonraki adımlar (roadmap): `docs/araba-iq-roadmap.md` — Faz 2 kalan: fit-score++ (kullanıcı ağırlıkları, normalizasyon).
 

@@ -35,7 +35,7 @@ Hazır senaryo **başlık / açıklama** ve form alanı **diff etiketleri**: `ar
 
 - **Backend üretimli metinler** (`ranking_reason`, `reasons`, `summary_comments`, fiyat yorumları vb.) locale’e göre çevrilmiyor; API ne dönerse o gösterilir.
 - **Preset diff’te segmentler** yalnızca `segment_ids` sayıları olarak listelenir; isim çözümü API’den gelmedikçe frontend’de yapılmaz.
-- **`arabaIq` çevirileri** yalnızca `tr` ve `en` JSON’da; diğer site locale’leri (`es` vb.) için `arabaIq` metinleri **İngilizce** fallback ile gelir (`getArabaIqMessages`).
+- **Site dilleri:** yalnızca `tr` ve `en` (`middleware` + `messages`). `getArabaIqMessages` dışı locale için **İngilizce** kullanılır.
 - **Karşılaştırma** tamamen mevcut API yanıtına bağlı; backend alanları değişirse pivot tablolar etkilenir (ayrı sözleşme/dokümantasyon API README’de).
 
 ---

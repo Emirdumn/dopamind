@@ -2,7 +2,7 @@
 
 **Ürün adı: ArabaIQ.** Segment ve filtre motoru: **Segmento.** Uygulama kodu: [`araba-iq-api/`](../araba-iq-api/README.md).
 
-> Not: E-ticaret tarafı **Django + DRF**; ArabaIQ API ayrı servis olarak **FastAPI + PostgreSQL** (`docker-compose`: `araba-iq-db`, port 5433).
+> Not: Bu repoda **ArabaIQ API** **FastAPI + PostgreSQL** ile gelir (`docker-compose`: `araba-iq-db`, port 5433). Ayrı bir e-ticaret backend’i bu repoda yoktur.
 
 ## İsim önerisi (kısa)
 
