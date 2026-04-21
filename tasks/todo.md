@@ -19,10 +19,13 @@
 
 ## Faz 3 — Layout
 
-- [ ] `frontend/src/app/layout.tsx` — `next/font/google` Inter (400/500/600/700) → `--font-inter`
-- [ ] `frontend/src/app/[locale]/layout.tsx` — body class Inter default, white canvas
-- [ ] `components/layout/Header.tsx` — 80px white, hairline bottom border, Rausch wordmark, Ink 500 nav links, active underline, locale switcher redesign
-- [ ] `components/layout/Footer.tsx` — Soft Cloud bg, 3-column (Product / Company / Legal), hairline top border, 12px Mute copyright
+- [x] `frontend/src/app/fonts.ts` — `next/font/google` Inter (400/500/600/700) with `variable: '--font-inter'`
+- [x] `frontend/src/app/layout.tsx` — root pass-through; metadata + globals.css import
+- [x] `frontend/src/app/[locale]/layout.tsx` — `html` receives `inter.variable`; body class `font-sans font-medium bg-canvas text-ink`; `pt-16 md:pt-20` header offset + `pb-20 md:pb-0` for mobile tab bar
+- [x] `components/layout/Header.tsx` — 64px mobile / 80px desktop, white canvas, hairline bottom; Rausch→magenta `brand-gradient` wordmark; 4-item desktop nav (Home · Recommendations · Compare · Garage) with 2px Ink underline active state; minimal mobile chrome (wordmark + locale only); locale switcher with `text-ink`/`text-mute` pair
+- [x] `components/layout/Footer.tsx` — Soft Cloud subsurface, 3-column (Product · Company · Legal), Ink 14/600 headings, Ash 14/500 links, hairline top border, brand-gradient wordmark + 12px Mute copyright
+- [x] `components/layout/MobileTabBar.tsx` — `md:hidden` fixed bottom bar, 3 tabs (Home · Compare · Garage), active Rausch + 2px pill indicator + heavier icon stroke, safe-area inset bottom padding
+- [x] i18n: new `footer.{product,company,legal,about,contact,privacy,terms,cookies}` keys in `tr.json` + `en.json`
 
 ## Faz 4 — Pages & Feature Components
 

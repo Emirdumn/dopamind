@@ -4,19 +4,38 @@
     "home": "Home",
     "navRecommendations": "Recommendations",
     "navCompare": "Compare",
+    "navGarage": "My Garage",
     "menu": "Menu",
     "language": "English",
     "loading": "Loading..."
   },
   "home": {
-    "hero_title": "Choose your next car with clarity",
-    "hero_subtitle": "Personalized recommendations and transparent side-by-side comparison powered by data.",
-    "hero_cta_primary": "Get recommendations",
-    "hero_cta_secondary": "Compare cars"
+    "hero_title": "Choose Your Car\nthe Smart Way.",
+    "hero_subtitle": "Add vehicles, compare side by side, make the right decision.",
+    "hero_cta_primary": "Compare Vehicles",
+    "hero_cta_secondary": "My Garage",
+    "step1_label": "Add Vehicle",
+    "step2_label": "Compare",
+    "step3_label": "Decide"
   },
   "footer": {
     "tagline": "Car comparison & recommendation platform.",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies"
+  },
+  "garage": {
+    "title": "My Garage",
+    "empty": "Your garage is empty.",
+    "emptyCta": "Add Vehicle",
+    "compare": "Compare",
+    "delete": "Delete"
   },
   "arabaIq": {
     "errors": {

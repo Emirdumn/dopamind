@@ -4,19 +4,38 @@
     "home": "Ana sayfa",
     "navRecommendations": "Öneriler",
     "navCompare": "Karşılaştır",
+    "navGarage": "Garajım",
     "menu": "Menü",
     "language": "Türkçe",
     "loading": "Yükleniyor..."
   },
   "home": {
-    "hero_title": "Aracını net seç",
-    "hero_subtitle": "Veriye dayalı kişisel öneriler ve şeffaf yan yana karşılaştırma.",
-    "hero_cta_primary": "Önerileri al",
-    "hero_cta_secondary": "Araçları karşılaştır"
+    "hero_title": "Aracını Akıllıca Seç.",
+    "hero_subtitle": "Araçları ekle, yan yana karşılaştır, doğru kararı ver.",
+    "hero_cta_primary": "Araç Karşılaştır",
+    "hero_cta_secondary": "Garajım",
+    "step1_label": "Araç Ekle",
+    "step2_label": "Karşılaştır",
+    "step3_label": "Karar Ver"
   },
   "footer": {
     "tagline": "Araç karşılaştırma ve öneri platformu.",
-    "rights": "Tüm hakları saklıdır."
+    "rights": "Tüm hakları saklıdır.",
+    "product": "Ürün",
+    "company": "Kurumsal",
+    "legal": "Yasal",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "privacy": "Gizlilik",
+    "terms": "Kullanım koşulları",
+    "cookies": "Çerezler"
+  },
+  "garage": {
+    "title": "Garajım",
+    "empty": "Garajınız boş.",
+    "emptyCta": "Araç Ekle",
+    "compare": "Karşılaştır",
+    "delete": "Sil"
   },
   "arabaIq": {
     "errors": {

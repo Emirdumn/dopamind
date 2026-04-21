@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import MobileTabBar from "@/components/layout/MobileTabBar";
+import { inter } from "@/app/fonts";
 
 const locales = ["tr", "en"];
 
@@ -38,17 +40,26 @@ async function getMessages(locale: string) {
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = params;
 
-  if (!locales.includes(locale)) {
-    notFound();
-  }
+  if (!locales.includes(locale)) notFound();
 
   const messages = await getMessages(locale);
 
+  const footerMessages = { ...messages.footer, ...messages.common };
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header messages={messages.common} />
-      <main className="flex-1">{children}</main>
-      <Footer messages={messages.footer} locale={locale} />
-    </div>
+    <html
+      lang={locale}
+      className={inter.variable}
+      suppressHydrationWarning
+    >
+      <body className="antialiased flex flex-col min-h-screen font-sans font-medium bg-canvas text-ink">
+        <Header messages={messages.common} />
+        <main className="flex-1 pt-16 pb-20 md:pt-20 md:pb-0">
+          {children}
+        </main>
+        <Footer messages={footerMessages} locale={locale} />
+        <MobileTabBar messages={messages.common} />
+      </body>
+    </html>
   );
 }

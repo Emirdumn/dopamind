@@ -3,15 +3,19 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "ArabaIQ",
-  description: "Car recommendations and comparison platform",
+  description: "Data-driven car recommendations and comparison.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="tr">
-      <body className="min-h-screen flex flex-col bg-[#E0E7D7] text-[#2d3a2a] antialiased">
-        {children}
-      </body>
-    </html>
-  );
+/**
+ * Root layout is a pass-through so `<html lang>` can be set dynamically
+ * in `app/[locale]/layout.tsx`, where the Inter font variable is also
+ * applied.
+ */
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return children as any;
 }
