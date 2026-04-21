@@ -12,10 +12,10 @@
 
 ## Faz 2 — UI Primitives
 
-- [ ] `components/ui/Button.tsx` — variants: `primary` (Rausch), `secondary` (pill, hairline border), `ghost`, `danger`, `icon-circle` (40px round)
-- [ ] `components/ui/Input.tsx` — white bg, hairline border, Ink focus + 2px ring, Error Red state, 12px Ash label
-- [ ] `components/ui/Badge.tsx` — 5 variants; Inter 600 12px, 14px radius pill or hairline border
-- [ ] `components/ui/ScoreRing.tsx` — hairline track, Ink numeral, keep `score.hi/mid/lo` semantic palette
+- [x] `components/ui/Button.tsx` — variants `primary` / `secondary` / `ghost` / `danger` / `icon-circle`; sizes `sm/md/lg`; shapes `rect/pill`; leading/trailing icon slots; Ink focus ring; `active:scale-[0.96]` press
+- [x] `components/ui/Input.tsx` — white canvas, hairline border, Ink focus + 2px ring, Error Red state, 12px Ash label, leading/trailing icon slots, a11y `aria-invalid`/`aria-describedby`
+- [x] `components/ui/Badge.tsx` — variants `neutral/success/warning/danger/info/brand`, sizes `sm/md`, pastel 10%-fill + 20%-border pattern, opt-in uppercase for 11px status caps
+- [x] `components/ui/ScoreRing.tsx` — hairline track, Ink numeral, auto stroke scaling, tabular-nums, aria-label; keeps `score.hi/mid/lo` semantic palette
 
 ## Faz 3 — Layout
 
