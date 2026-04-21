@@ -2,40 +2,139 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/**
+ * ArabaIQ — Airbnb-inspired light theme
+ * Inter is the open-source substitute for Airbnb Cereal VF; it is
+ * loaded via next/font in app/layout.tsx (Phase 3) and exposed on
+ * the `--font-inter` CSS variable. Until then, the @import below
+ * guarantees Inter renders correctly even during the transitional
+ * Phase 1 commit.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --background: #E0E7D7;
-  --foreground: #2d3a2a;
+  /* ── Airbnb palette ── */
+  --color-canvas:     #ffffff;
+  --color-subsurface: #f7f7f7;
+  --color-hairline:   #dddddd;
+
+  --color-ink:        #222222;
+  --color-charcoal:   #3f3f3f;
+  --color-ash:        #6a6a6a;
+  --color-mute:       #929292;
+  --color-stone:      #c1c1c1;
+
+  --color-rausch:      #ff385c;
+  --color-rausch-deep: #e00b41;
+
+  --color-error:      #c13515;
+  --color-error-deep: #b32505;
+  --color-info:       #428bff;
+
+  /* ── Legacy aliases (kept for Phase 1 compatibility) ── */
+  --color-background: var(--color-canvas);
+  --color-surface:    var(--color-subsurface);
+  --color-text:       var(--color-ink);
+  --color-muted:      var(--color-ash);
+  --color-accent:     var(--color-hairline);
+  --color-primary:    var(--color-rausch);
+
+  /* ── Score palette (semantic exception) ── */
+  --c-score-hi:  #22C55E;
+  --c-score-mid: #F59E0B;
+  --c-score-lo:  #EF4444;
+
+  /* ── Layout tokens ── */
+  --radius:  8px;
+  --spacing: 8px;
+
+  /* ── Typography ── */
+  --font-body-weight: 500;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
+    color-scheme: light;
   }
+
   body {
-    color: var(--foreground);
-    background: var(--background);
-    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--color-ink);
+    background: var(--color-canvas);
+    font-family: 'Inter', -apple-system, system-ui, Roboto, 'Helvetica Neue', sans-serif;
+    font-weight: 500; /* System body weight — never 400 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Headline feel: slight tracking compression to approximate Cereal VF */
+  h1, h2, h3 { letter-spacing: -0.018em; }
+  h1 { letter-spacing: -0.02em; }
+
   ::selection {
-    background: rgba(74, 157, 124, 0.2);
-    color: #1a1a1a;
+    background: rgba(255, 56, 92, 0.18); /* Rausch tint */
+    color: var(--color-ink);
   }
-  ::-webkit-scrollbar {
-    width: 5px;
+
+  /* Subtle scrollbars — in keeping with the "chrome disappears" philosophy */
+  ::-webkit-scrollbar        { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track  { background: transparent; }
+  ::-webkit-scrollbar-thumb  { background: var(--color-hairline); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-stone); }
+}
+
+@layer components {
+  .font-heading {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    letter-spacing: -0.018em;
   }
-  ::-webkit-scrollbar-track {
-    background: transparent;
+
+  /* Rausch→magenta wordmark gradient — used ONLY on the brand lockup.
+     Keep pill/narrow fills; never used as a full surface. */
+  .brand-gradient {
+    background: linear-gradient(90deg, #ff385c 0%, #e00b41 50%, #92174d 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
-  ::-webkit-scrollbar-thumb {
-    background: #B7C396;
-    border-radius: 3px;
+
+  /* Three-layer booking-panel lift — see Depth & Elevation §6 */
+  .shadow-lift {
+    box-shadow:
+      rgba(0, 0, 0, 0.02) 0 0 0 1px,
+      rgba(0, 0, 0, 0.04) 0 2px 6px 0,
+      rgba(0, 0, 0, 0.1)  0 4px 8px 0;
   }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .text-balance { text-wrap: balance; }
+
+  /* Numeric utility — compare tables & price rows */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
   }
+
+  /* 8px superscript — the one uppercase role in the system */
+  .superscript {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.32px;
+    text-transform: uppercase;
+    line-height: 1.25;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
 }
