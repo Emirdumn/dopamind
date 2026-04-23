@@ -1,10 +1,12 @@
 import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 import CompareClient from "./CompareClient";
 
 function CompareFallback() {
   return (
-    <div className="min-h-[40vh] flex items-center justify-center bg-[#E0E7D7] pt-24 text-sm text-[#2d3a2a]/60">
-      Yükleniyor…
+    <div className="min-h-[40vh] flex items-center justify-center gap-2 bg-canvas text-ash">
+      <Loader2 className="w-4 h-4 animate-spin" />
+      <span className="font-sans text-[14px] font-medium">Yükleniyor…</span>
     </div>
   );
 }

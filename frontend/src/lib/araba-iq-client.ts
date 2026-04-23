@@ -89,4 +89,27 @@ export async function fetchSegments(): Promise<SegmentItem[]> {
   return data as SegmentItem[];
 }
 
+export interface CarVariantListItem {
+  id: number;
+  model_id: number;
+  trim_name: string;
+  year: number;
+  fuel_type: string | null;
+  transmission: string | null;
+  brand_name: string | null;
+  model_name: string | null;
+}
+
+export async function fetchCars(search?: string): Promise<CarVariantListItem[]> {
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  const url = `${ARABAIQ_BASE}/cars${params.toString() ? `?${params}` : ""}`;
+  const res = await fetch(url, { method: "GET" });
+  const data = (await parseJsonResponse(res)) as { detail?: unknown };
+  if (!res.ok) {
+    throw new Error(formatFastApiDetail(data?.detail) || `HTTP ${res.status}`);
+  }
+  return data as CarVariantListItem[];
+}
+
 export { ARABAIQ_BASE };

@@ -4,18 +4,25 @@ import { cn } from "@/lib/utils";
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 
 /**
- * Airbnb-inspired button primitive.
+ * Midnight Showroom button primitive.
  *
- * Variants:
- * - `primary`      — Rausch coral background, white label. The system's
- *                    single highest-visibility CTA (Reserve / Search / Compare).
- * - `secondary`    — White pill-outlined button with Ink label. The most
- *                    common neutral action ("Become a host" / "View details").
- * - `ghost`        — Transparent fill, Ink label, Soft Cloud hover. Used for
- *                    tertiary in-row actions.
- * - `danger`       — Error Red fill. Destructive actions only.
- * - `icon-circle`  — 40×40 circular icon button. The system's signature
- *                    geometry — back arrow, share, favorite, carousel arrows.
+ * Variants (per design doc §5):
+ * - `primary`      — Indigo LED gradient (#c0c1ff → #8083ff), white label,
+ *                    no border, 12px radius. Hover lifts with primary glow
+ *                    ring; press dampens with a tonal shift.
+ * - `secondary`    — Transparent fill with `outline-variant` ghost border
+ *                    @ 30%. Hover fills with 10% primary tint and the
+ *                    border warms to primary @ 28%.
+ * - `tertiary`     — Text-only primary label, no fill, no border. Highest
+ *                    energy at the smallest footprint; used for inline
+ *                    "View details" / "Learn more" moments.
+ * - `ghost`        — Transparent fill, on-surface label, surface-container
+ *                    hover. For low-emphasis chrome (cancel, close inline).
+ * - `danger`       — MD3 error container fill with on-error-container label.
+ *                    Destructive actions only.
+ * - `icon-circle`  — 40×40 circular icon button with a ghost border and
+ *                    surface-container hover. The system's signature icon
+ *                    geometry for share/favorite/carousel/close.
  *
  * Sizes (not applicable to `icon-circle`):
  * - `sm`  — 32px tall, 14px label (inline actions, toolbars)
@@ -23,10 +30,10 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
  * - `lg`  — 48px tall, 16px label (primary hero CTA)
  *
  * Shape:
- * - `rect` (default) — 8px radius
- * - `pill`           — 20px radius (full rounded ends on md/lg heights)
+ * - `rect` (default) — 12px radius (MD3 xl) — used on all standard buttons.
+ * - `pill`           — 20px radius — larger surfaces, hero cards, input-pairs.
  */
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "icon-circle";
+type ButtonVariant = "primary" | "secondary" | "tertiary" | "ghost" | "danger" | "icon-circle";
 type ButtonSize    = "sm" | "md" | "lg";
 type ButtonShape   = "rect" | "pill";
 
@@ -35,23 +42,49 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?:    ButtonSize;
   shape?:   ButtonShape;
   loading?: boolean;
-  /** Optional left icon (sm component). Not used on icon-circle. */
+  /** Optional left icon. Not used on icon-circle. */
   leadingIcon?: ReactNode;
-  /** Optional right icon (sm component). Not used on icon-circle. */
+  /** Optional right icon. Not used on icon-circle. */
   trailingIcon?: ReactNode;
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    "bg-rausch text-canvas hover:bg-rausch-deep focus-visible:shadow-focus active:scale-[0.96]",
-  secondary:
-    "bg-canvas text-ink border border-hairline hover:border-ink hover:bg-subsurface focus-visible:shadow-focus active:scale-[0.96]",
-  ghost:
-    "bg-transparent text-ink hover:bg-subsurface focus-visible:shadow-focus active:scale-[0.96]",
-  danger:
-    "bg-error text-canvas hover:bg-error-deep focus-visible:shadow-focus active:scale-[0.96]",
-  "icon-circle":
-    "bg-canvas text-ink border border-hairline hover:bg-subsurface focus-visible:shadow-focus active:scale-[0.92]",
+  primary: cn(
+    "primary-gradient text-white shadow-pop",
+    "hover:shadow-glow hover:brightness-110",
+    "active:scale-[0.97] active:brightness-95",
+    "focus-visible:shadow-focus",
+  ),
+  secondary: cn(
+    "bg-transparent text-on-surface ghost-border",
+    "hover:text-primary",
+    "active:scale-[0.97]",
+    "focus-visible:shadow-focus",
+  ),
+  tertiary: cn(
+    "bg-transparent text-primary",
+    "hover:text-primary-container",
+    "active:scale-[0.97]",
+    "focus-visible:shadow-focus",
+  ),
+  ghost: cn(
+    "bg-transparent text-on-surface",
+    "hover:bg-surface-container",
+    "active:scale-[0.97]",
+    "focus-visible:shadow-focus",
+  ),
+  danger: cn(
+    "bg-error-container text-error-on-container",
+    "hover:brightness-110",
+    "active:scale-[0.97]",
+    "focus-visible:shadow-focus",
+  ),
+  "icon-circle": cn(
+    "bg-transparent text-on-surface ghost-border",
+    "hover:bg-surface-container hover:text-primary",
+    "active:scale-[0.92]",
+    "focus-visible:shadow-focus",
+  ),
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -61,8 +94,8 @@ const sizeClasses: Record<ButtonSize, string> = {
 };
 
 const shapeClasses: Record<ButtonShape, string> = {
-  rect: "rounded-md",
-  pill: "rounded-xl",
+  rect: "rounded-lg", // MD3 xl = 12px per tailwind config
+  pill: "rounded-xl", // 20px — hero cards
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -85,8 +118,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const isIconCircle = variant === "icon-circle";
 
     const base = cn(
-      "relative inline-flex items-center justify-center font-sans font-medium",
-      "transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out",
+      "relative inline-flex items-center justify-center font-sans font-semibold",
+      "transition duration-300 ease-in-out",
       "outline-none select-none whitespace-nowrap",
       "disabled:cursor-not-allowed disabled:opacity-50",
     );

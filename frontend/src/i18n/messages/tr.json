@@ -10,13 +10,20 @@
     "loading": "Yükleniyor..."
   },
   "home": {
-    "hero_title": "Aracını Akıllıca Seç.",
-    "hero_subtitle": "Araçları ekle, yan yana karşılaştır, doğru kararı ver.",
-    "hero_cta_primary": "Araç Karşılaştır",
-    "hero_cta_secondary": "Garajım",
-    "step1_label": "Araç Ekle",
-    "step2_label": "Karşılaştır",
-    "step3_label": "Karar Ver"
+    "hero_title_part1": "Aracını",
+    "hero_title_part2": "Akıllıca Seç.",
+    "hero_subtitle": "Mühendislik hassasiyeti ve editoryal zarafeti bir arada. Keşfet, yan yana karşılaştır, senin zevkine uygun aracı bul.",
+    "hero_search_placeholder": "Marka, model veya kategori…",
+    "hero_search_cta": "Keşfet",
+    "hero_trending_label": "Popüler",
+    "popular_title": "Popüler Modeller",
+    "popular_subtitle": "Showroom zemininden öne çıkan araçlar.",
+    "popular_view_all": "Tümünü Gör",
+    "popular_view_details": "Detayları Gör",
+    "popular_starting": "Başlangıç",
+    "compare_card_title": "Yan Yana Karşılaştır",
+    "compare_card_body": "Seçtiğin araçları yan yana getir. Performans verisini, donanım zenginliğini ve tasarım dilini derinlemesine incele.",
+    "compare_card_cta": "Karşılaştırmaya Başla"
   },
   "footer": {
     "tagline": "Araç karşılaştırma ve öneri platformu.",
@@ -49,7 +56,15 @@
     "recommendations": {
       "badge": "ArabaIQ",
       "title": "Araç önerileri",
-      "subtitle": "Tercihlerinize göre sıralı öneriler. total_candidates: bütçe (1.25×) ve isteğe bağlı strict_required sonrası skorlanan havuz; returned: limit sonrası liste.",
+      "subtitle": "Senaryonu seç, doğru aracı birlikte bulalım.",
+      "welcomeTitle": "Tercihini seç, doğru aracı önerelim.",
+      "welcomeSubtitle": "Uzun bir form yok. Bir senaryo seç, istersen segment ekle — gerisini veriye bırak.",
+      "presetsHeading": "Önce senaryonu seç",
+      "presetsSubtitle": "Hazır senaryolar, tüm tercihlerini tek tıkla dolduruyor. İleride istediğin kadar daralt.",
+      "segmentHeading": "Segment (opsiyonel)",
+      "segmentSelected": "segment seçildi",
+      "segmentClear": "Temizle",
+      "resultsHeading": "Senin için öneriler",
       "compareTray": "Karşılaştırma sepeti",
       "submit": "Önerileri getir",
       "submitLoading": "Hesaplanıyor…",
@@ -155,6 +170,18 @@
         "low_maintenance": {
           "title": "Düşük bakım maliyeti",
           "description": "Bakım hassasiyeti yüksek, ekonomi ve ikinci el"
+        },
+        "low_tax": {
+          "title": "Düşük vergi dilimi",
+          "description": "Küçük motor, verimli tüketim — Türkiye ÖTV’de hafif kalan araçlar"
+        },
+        "first_car": {
+          "title": "İlk araç",
+          "description": "Uygun fiyat, kolay bakım, güçlü ikinci el değeri"
+        },
+        "long_distance": {
+          "title": "Uzun yol",
+          "description": "Şehirler arası konfor ve yakıt ekonomisi odaklı"
         }
       },
       "featureLabels": {
@@ -213,7 +240,23 @@
       "equipmentCategoryAll": "Tüm kategoriler",
       "equipmentCategoryLabel": "Kategori",
       "equipmentSummary": "{cars} araçta toplam {advantages} benzersiz avantaj (yalnızca bir araçta «var»)",
-      "equipmentEmptyFiltered": "Seçili filtrelere uyan satır yok."
+      "equipmentEmptyFiltered": "Seçili filtrelere uyan satır yok.",
+      "topPickBadge": "ArabaIQ Top Pick",
+      "topPickSubtitle": "{wins} / {total} kategoride önde",
+      "topPickDimensions": "Önde olduğu kategoriler",
+      "addVehicle": "Araç ekle",
+      "addAnother": "+ Araç ekle",
+      "sectionOverview": "Bakış",
+      "sectionPerformance": "Performans",
+      "sectionTechnical": "Teknik",
+      "sectionMarket": "Piyasa",
+      "sectionEquipment": "Donanım",
+      "columnChange": "Değiştir",
+      "columnRemove": "Kaldır",
+      "columnSegment": "Segment",
+      "columnYear": "Yıl",
+      "columnTrim": "Donanım paketi",
+      "emptyCell": "—"
     }
   }
 }

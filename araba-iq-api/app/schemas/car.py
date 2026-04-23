@@ -12,3 +12,5 @@ class CarVariantRead(BaseModel):
     year: int
     fuel_type: Optional[str]
     transmission: Optional[str]
+    brand_name: Optional[str] = None
+    model_name: Optional[str] = None

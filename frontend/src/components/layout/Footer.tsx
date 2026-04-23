@@ -8,15 +8,21 @@ interface FooterProps {
 }
 
 /**
- * Footer.
+ * Midnight Showroom footer.
  *
- * Soft Cloud `#f7f7f7` subsurface with a 1px Hairline top border.
+ * Sits on `surface-container-lowest` (#070d1f) — one step darker than
+ * the main canvas so the page-to-footer transition reads as a tonal
+ * descent into the void, not a line.
+ *
+ * **No border-top** (doc §2 "no-line rule"). The handoff from the canvas
+ * (`surface`) to the footer (`surface-container-lowest`) is the divider.
  *
  * Three-column on ≥768px (Product · Company · Legal), stacked single
- * column on mobile. Each heading is 14px 600 Ink; links are 14px 500
- * Ash with Ink hover — the standard "one-step-down" emphasis copy.
+ * column on mobile. Each heading is 14px 600 on-surface; links are 14px
+ * 500 on-surface-variant with primary hover.
  *
- * Bottom strip carries the Rausch wordmark and a 12px Mute copyright.
+ * Bottom strip carries the split Araba|IQ wordmark and a 12px outline
+ * copyright line.
  */
 export default function Footer({ messages, locale }: FooterProps) {
   const year = new Date().getFullYear();
@@ -54,21 +60,21 @@ export default function Footer({ messages, locale }: FooterProps) {
   ];
 
   return (
-    <footer className="bg-subsurface border-t border-hairline">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-10 py-10 md:py-14">
+    <footer className="bg-surface-container-lowest">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-10 py-12 md:py-16">
         {/* Columns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
           {columns.map((col) => (
             <div key={col.heading}>
-              <h3 className="font-sans text-[14px] font-semibold text-ink mb-3">
+              <h3 className="font-heading text-[14px] font-semibold text-on-surface mb-4 tracking-[-0.01em]">
                 {col.heading}
               </h3>
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-2.5">
                 {col.links.map((link) => (
                   <li key={`${col.heading}-${link.label}`}>
                     <Link
                       href={link.href}
-                      className="font-sans text-[14px] font-medium text-ash hover:text-ink transition-colors"
+                      className="font-sans text-[14px] font-medium text-on-surface-variant hover:text-primary transition-colors duration-300"
                     >
                       {link.label}
                     </Link>
@@ -79,12 +85,13 @@ export default function Footer({ messages, locale }: FooterProps) {
           ))}
         </div>
 
-        {/* Bottom strip */}
-        <div className="mt-10 md:mt-14 pt-6 border-t border-hairline flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-          <span className="brand-gradient font-sans font-bold text-[16px] tracking-[-0.02em]">
-            {messages.brand ?? "ArabaIQ"}
+        {/* Bottom strip — separation via the grid spacing, not a divider */}
+        <div className="mt-14 md:mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+          <span className="font-heading font-bold text-[18px] tracking-[-0.028em] flex items-baseline">
+            <span className="text-on-surface">Araba</span>
+            <span className="brand-gradient">IQ</span>
           </span>
-          <span className="font-sans text-[12px] font-medium text-mute">
+          <span className="font-sans text-[12px] font-medium text-outline">
             © {year} ArabaIQ · {messages.rights}
           </span>
         </div>

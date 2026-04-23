@@ -4,14 +4,17 @@ import { cn } from "@/lib/utils";
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from "react";
 
 /**
- * Airbnb-inspired text input.
+ * Midnight Showroom text input (design doc §5).
  *
- * - White canvas, 1px Hairline border, 8px radius, 14px padding
- * - On focus: border → Ink Black + 2px Ink outer ring (`shadow-focus`)
- * - On error: border + helper text switch to Error Red `#c13515`
- * - Label sits above at 12px Ash; optional helper at 12px Ash (or Error Red)
+ * - No solid background — renders on the parent's surface tone.
+ * - **Bottom-only "Ghost Border"** using `outline-variant` @ 22% opacity.
+ *   Focus thickens the border to 2px primary indigo with a 300ms animation.
+ * - On error the ghost border switches to MD3 error and the helper text
+ *   reads in `error` (on-error-container foreground).
+ * - Label sits above at 12px on-surface-variant; optional helper at 12px.
  *
- * A leading or trailing icon slot can be supplied for search-style fields.
+ * A leading or trailing icon slot supports search-style fields without
+ * altering the chrome — icons sit on the same transparent row.
  */
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -46,7 +49,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="mb-1.5 block font-sans text-[12px] font-medium text-ash"
+            className="mb-2 block font-sans text-[12px] font-medium text-on-surface-variant"
           >
             {label}
           </label>
@@ -55,15 +58,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <div
           className={cn(
             "group relative flex items-center w-full",
-            "rounded-md border bg-canvas transition-[border-color,box-shadow] duration-150 ease-out",
+            "bg-transparent transition-[border-color] duration-300 ease-in-out",
+            // Bottom-only ghost border — outline-variant @ 22%, thickens on focus.
+            "border-b",
             hasError
-              ? "border-error focus-within:border-error focus-within:shadow-[0_0_0_2px_#c13515]"
-              : "border-hairline focus-within:border-ink focus-within:shadow-focus",
+              ? "border-error focus-within:border-error"
+              : "border-[rgba(67,71,88,0.22)] focus-within:border-primary focus-within:border-b-2",
             disabled && "opacity-50 cursor-not-allowed",
           )}
         >
           {leadingIcon && (
-            <span className="pl-4 text-ash flex items-center" aria-hidden="true">
+            <span className="pl-1 pr-2 text-on-surface-variant flex items-center" aria-hidden="true">
               {leadingIcon}
             </span>
           )}
@@ -76,10 +81,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             aria-describedby={helper ? `${inputId}-help` : undefined}
             className={cn(
               "w-full bg-transparent outline-none",
-              "font-sans text-[14px] font-medium text-ink placeholder:text-mute",
-              "px-4 py-[12px]",
-              leadingIcon && "pl-2",
-              trailingIcon && "pr-2",
+              "font-sans text-[15px] font-medium text-on-surface placeholder:text-mute",
+              "px-1 py-[10px]",
               "disabled:cursor-not-allowed",
               className,
             )}
@@ -87,7 +90,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           />
 
           {trailingIcon && (
-            <span className="pr-4 text-ash flex items-center" aria-hidden="true">
+            <span className="pl-2 pr-1 text-on-surface-variant flex items-center" aria-hidden="true">
               {trailingIcon}
             </span>
           )}
@@ -97,8 +100,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <p
             id={`${inputId}-help`}
             className={cn(
-              "mt-1 font-sans text-[12px]",
-              hasError ? "text-error font-medium" : "text-ash",
+              "mt-2 font-sans text-[12px]",
+              hasError ? "text-error font-medium" : "text-on-surface-variant",
             )}
           >
             {helper}

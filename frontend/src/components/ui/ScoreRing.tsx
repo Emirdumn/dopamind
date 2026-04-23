@@ -1,14 +1,17 @@
 /**
- * ScoreRing — semantic exception component.
+ * ScoreRing — Midnight Showroom semantic-exception component.
  *
- * Per the rebrand's Do/Don'ts §7 the system normally disallows secondary
- * accent colors; the score traffic-light (green/amber/red) is a documented
- * exception because at-a-glance data legibility is a functional requirement.
+ * Per the doc §7 the system normally routes all accent energy through the
+ * primary indigo gradient; the score traffic-light (green / amber / red)
+ * is a documented exception because at-a-glance data legibility is a
+ * functional requirement. The component also renders on the darkest
+ * surfaces, so contrast ratios for the numeral and track are higher than
+ * MD3 defaults.
  *
  * Visual:
- * - Track ring  → Hairline `#dddddd`
- * - Score ring  → Score Hi/Mid/Lo (≥90 green, ≥75 amber, else red)
- * - Numeral     → Ink Black `#222222`, Inter 700, tabular-nums
+ * - Track ring  → `outline-variant` @ 22% (ghost trace, never solid)
+ * - Score ring  → score.hi/mid/lo (≥90 green, ≥75 amber, else red)
+ * - Numeral     → `on-surface` (#dce1fb), Inter 700, tabular-nums, tight tracking
  */
 interface Props {
   score: number;
@@ -54,7 +57,7 @@ export function ScoreRing({
         cy={cy}
         r={r}
         fill="none"
-        stroke="var(--color-hairline)"
+        stroke="rgba(67, 71, 88, 0.22)"
         strokeWidth={sw}
       />
       <circle
@@ -74,10 +77,10 @@ export function ScoreRing({
           y={cy}
           textAnchor="middle"
           dominantBaseline="central"
-          fill="var(--color-ink)"
+          fill="var(--color-on-surface)"
           fontSize={size < 48 ? 11 : size < 64 ? 13 : 16}
           fontWeight={700}
-          fontFamily="Inter, -apple-system, system-ui, sans-serif"
+          fontFamily="var(--font-inter), Inter, -apple-system, system-ui, sans-serif"
           style={{ fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}
         >
           {Math.round(clamped)}

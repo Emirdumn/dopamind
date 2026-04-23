@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import MobileTabBar from "@/components/layout/MobileTabBar";
-import { inter } from "@/app/fonts";
+import { inter, jakarta } from "@/app/fonts";
 
 const locales = ["tr", "en"];
 
@@ -49,7 +49,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html
       lang={locale}
-      className={inter.variable}
+      className={`${inter.variable} ${jakarta.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased flex flex-col min-h-screen font-sans font-medium bg-canvas text-ink">

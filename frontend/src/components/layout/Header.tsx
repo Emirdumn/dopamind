@@ -14,16 +14,19 @@ interface HeaderProps {
 }
 
 /**
- * Top navigation.
+ * Midnight Showroom top navigation.
  *
  * Desktop (≥768px):
- *   [ArabaIQ wordmark]   Home · Recommendations · Compare · Garage   TR / EN
- *   - Height 80px, white canvas, 1px Hairline bottom border
- *   - Wordmark rendered with the Rausch→magenta `.brand-gradient`
- *   - Active nav link gets a 2px Ink underline (4px below baseline)
+ *   [Araba|IQ wordmark]   Home · Recommendations · Compare · Garage   TR / EN
+ *   - Height 80px, **glassmorphism** (surface-variant @ 40% + 20px blur)
+ *   - No border-bottom — separation emerges from the canvas underneath
+ *     flowing past the glass panel (doc §2 "no-line rule")
+ *   - Wordmark: "Araba" in on-surface + "IQ" in primary gradient
+ *     (Jakarta 700, tight tracking)
+ *   - Active nav link: primary label + 2px primary pill indicator
  *
  * Mobile (<768px):
- *   [ArabaIQ wordmark]                                               TR / EN
+ *   [Araba|IQ wordmark]                                               TR / EN
  *   - Height 64px, no centre nav; page nav lives in `MobileTabBar`
  *   - Edge padding tightens to 16px per the responsive rhythm
  */
@@ -51,19 +54,20 @@ export default function Header({ messages }: HeaderProps) {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-canvas border-b border-hairline">
+    <header className="fixed top-0 left-0 right-0 z-50 glass-nav">
       <div className="max-w-[1760px] mx-auto px-4 md:px-10 h-16 md:h-20 flex items-center justify-between gap-4">
-        {/* Wordmark */}
+        {/* Wordmark — split lockup */}
         <Link
           href={`/${locale}`}
           aria-label={messages.brand}
-          className="brand-gradient font-sans font-bold text-[20px] md:text-[22px] tracking-[-0.02em]"
+          className="font-heading font-bold text-[22px] md:text-[26px] tracking-[-0.028em] flex items-baseline"
         >
-          {messages.brand}
+          <span className="text-on-surface">Araba</span>
+          <span className="brand-gradient">IQ</span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1" aria-label="Primary">
+        {/* Desktop nav — generous pill targets per doc §6 "Don't crowd navigation" */}
+        <nav className="hidden md:flex items-center gap-2" aria-label="Primary">
           {navItems.map((item) => {
             const active = isActive(item.href);
             return (
@@ -71,15 +75,15 @@ export default function Header({ messages }: HeaderProps) {
                 key={item.href}
                 href={`/${locale}${item.href}`}
                 className={cn(
-                  "relative px-3 py-2 font-sans text-[14px] font-medium transition-colors",
-                  active ? "text-ink" : "text-ash hover:text-ink",
+                  "relative px-6 py-3 font-sans text-[16px] font-semibold rounded-full transition-colors duration-300",
+                  active ? "text-primary" : "text-on-surface-variant hover:text-on-surface",
                 )}
               >
                 {item.label}
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "pointer-events-none absolute left-3 right-3 -bottom-[1px] h-[2px] rounded-full bg-ink transition-opacity",
+                    "pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-1 h-[2px] w-8 rounded-full primary-gradient-horizontal transition-opacity duration-300",
                     active ? "opacity-100" : "opacity-0",
                   )}
                 />
@@ -89,7 +93,7 @@ export default function Header({ messages }: HeaderProps) {
         </nav>
 
         {/* Locale switcher */}
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1">
           {LOCALES.map((l, i) => (
             <span key={l.code} className="flex items-center">
               <button
@@ -97,16 +101,16 @@ export default function Header({ messages }: HeaderProps) {
                 onClick={() => switchLang(l.code)}
                 aria-pressed={locale === l.code}
                 className={cn(
-                  "font-sans text-[14px] font-medium px-2 py-1 rounded-md transition-colors",
+                  "font-sans text-[15px] font-semibold px-3 py-1.5 rounded-md transition-colors duration-300",
                   locale === l.code
-                    ? "text-ink"
-                    : "text-mute hover:text-ink",
+                    ? "text-on-surface"
+                    : "text-on-surface-variant/70 hover:text-on-surface",
                 )}
               >
                 {l.label}
               </button>
               {i < LOCALES.length - 1 && (
-                <span aria-hidden="true" className="text-stone">·</span>
+                <span aria-hidden="true" className="text-outline-variant">·</span>
               )}
             </span>
           ))}

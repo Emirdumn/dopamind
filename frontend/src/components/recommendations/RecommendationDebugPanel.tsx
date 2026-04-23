@@ -12,14 +12,14 @@ export function RecommendationDebugPanel({ excluded, t }: Props) {
   if (excluded.length === 0) return null;
 
   return (
-    <section className="rounded-2xl border border-dashed border-violet-400/60 bg-violet-50/50 p-4">
-      <h3 className="text-sm font-bold text-violet-900 mb-2">{t.debugExcludedTitle}</h3>
-      <ul className="space-y-2 text-sm">
+    <section className="border border-dashed border-accent bg-surface rounded-[2px] p-4">
+      <h3 className="font-heading text-[14px] font-semibold text-foreground mb-2">{t.debugExcludedTitle}</h3>
+      <ul className="space-y-2">
         {excluded.map((e) => (
-          <li key={e.car_id} className="rounded-lg bg-white/80 p-2 border border-violet-200/60">
-            <span className="font-mono text-violet-800">#{e.car_id}</span>{" "}
-            <span className="text-[#2d3a2a]">{e.car_name}</span>
-            <p className="text-xs text-violet-900/80 mt-1">{e.reason}</p>
+          <li key={e.car_id} className="bg-background rounded-[2px] p-2 border border-accent">
+            <span className="font-heading text-[13px] font-semibold text-primary tabular">#{e.car_id}</span>{" "}
+            <span className="font-body text-[13px] text-foreground">{e.car_name}</span>
+            <p className="font-body text-[12px] text-muted mt-1">{e.reason}</p>
           </li>
         ))}
       </ul>

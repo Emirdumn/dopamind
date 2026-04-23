@@ -12,7 +12,14 @@
 import type { RecommendationFormState } from "@/types/araba-iq-recommendation";
 import type { ArabaIqRecommendationMessages } from "@/lib/araba-iq-messages";
 
-export type PresetId = "city_economy" | "family_suv" | "prestige" | "low_maintenance";
+export type PresetId =
+  | "city_economy"
+  | "family_suv"
+  | "prestige"
+  | "low_maintenance"
+  | "low_tax"
+  | "first_car"
+  | "long_distance";
 
 export interface RecommendationPreset {
   id: PresetId;
@@ -90,6 +97,74 @@ export const RECOMMENDATION_PRESETS: RecommendationPreset[] = [
       segment_ids: [],
       required_features: [],
       preferred_features: ["apple_carplay", "rear_camera"],
+      strict_required: false,
+    },
+  },
+  /**
+   * Düşük vergi dilimi — Türkiye ÖTV odaklı.
+   *
+   * Backend şu an `engine_displacement_max` filtresi sunmuyor, bu yüzden
+   * preset dolaylı yoldan küçük/verimli araçları öne çıkaracak şekilde
+   * kuruldu: yüksek ekonomi + düşük prestij/performans + hibrit tercihi.
+   * Segment tercihi boş bırakıldı — kullanıcı yerelde A/B/C seçebilir.
+   */
+  {
+    id: "low_tax",
+    patch: {
+      economy_priority: 9,
+      maintenance_sensitivity: 8,
+      resale_priority: 7,
+      prestige_priority: 2,
+      performance_priority: 3,
+      comfort_priority: 5,
+      family_priority: 5,
+      city_usage_ratio: 75,
+      fuel_preference: "Hybrid",
+      segment_ids: [],
+      required_features: [],
+      preferred_features: ["apple_carplay"],
+      strict_required: false,
+    },
+  },
+  /**
+   * İlk araç / genç sürücü — uygun fiyat + kolay bakım + ikinci el değeri.
+   */
+  {
+    id: "first_car",
+    patch: {
+      economy_priority: 8,
+      maintenance_sensitivity: 9,
+      resale_priority: 9,
+      prestige_priority: 3,
+      performance_priority: 4,
+      comfort_priority: 5,
+      family_priority: 4,
+      city_usage_ratio: 80,
+      fuel_preference: "Benzin",
+      segment_ids: [],
+      required_features: [],
+      preferred_features: ["apple_carplay", "rear_camera"],
+      strict_required: false,
+    },
+  },
+  /**
+   * Uzun yol — şehirler arası konfor + yakıt ekonomisi + dizel tercihi.
+   */
+  {
+    id: "long_distance",
+    patch: {
+      comfort_priority: 9,
+      economy_priority: 8,
+      performance_priority: 6,
+      prestige_priority: 5,
+      family_priority: 6,
+      resale_priority: 6,
+      maintenance_sensitivity: 6,
+      city_usage_ratio: 25,
+      fuel_preference: "Dizel",
+      segment_ids: [],
+      required_features: [],
+      preferred_features: ["adaptive_cruise_control", "lane_keep_assist"],
       strict_required: false,
     },
   },

@@ -43,22 +43,36 @@ def reset_and_seed() -> None:
         db.add_all([toyota, nissan, hyundai, bmw])
         db.flush()
 
-        c_suv = Segment(
-            name="C-SUV",
-            category_type="technical",
-            description="Compact SUV",
-        )
-        premium_sedan = Segment(
-            name="Premium Sedan",
-            category_type="technical",
-            description="Premium sedan class",
-        )
-        db.add_all([c_suv, premium_sedan])
+        # ── Avrupa segment taksonomisi (A → M) ──
+        # Kaynak: European Commission Car Classification, J ve M body-style
+        # eklentileriyle. Frontend `segment-catalog.ts` ile aynı sırada
+        # seed edilir; böylece `GET /segments` chips-row için hazır gelir.
+        segment_defs: list[tuple[str, str]] = [
+            ("A-Segment", "Mini / city cars — compact urban footprint, low running costs."),
+            ("B-Segment", "Supermini class — small but roomier than A."),
+            ("C-Segment", "Compact class — the Turkish mainstream daily driver."),
+            ("D-Segment", "Mid-size sedan/hatchback — premium brand entry tier."),
+            ("E-Segment", "Executive upper-mid — business/status use, spacious cabins."),
+            ("F-Segment", "Full-size luxury — top-tier comfort and engineering."),
+            ("S-Segment", "Sports coupes & performance variants — driving-focused."),
+            ("J-Segment", "Sport utility & crossovers — elevated stance, multi-purpose."),
+            ("M-Segment", "Multi-purpose vehicles — 7+ seats, family/cargo hauling."),
+        ]
+        segments_by_code: dict[str, Segment] = {}
+        for name, description in segment_defs:
+            seg = Segment(name=name, category_type="technical", description=description)
+            segments_by_code[name[0]] = seg
+        db.add_all(list(segments_by_code.values()))
         db.flush()
+
+        # Kısaltma: ID erişimi için
+        seg_c = segments_by_code["C"]
+        seg_d = segments_by_code["D"]
+        seg_j = segments_by_code["J"]
 
         m_cc = VehicleModel(
             brand_id=toyota.id,
-            segment_id=c_suv.id,
+            segment_id=seg_j.id,  # Corolla Cross is a compact crossover → J
             name="Corolla Cross",
             body_type="SUV",
             start_year=2020,
@@ -66,7 +80,7 @@ def reset_and_seed() -> None:
         )
         m_qa = VehicleModel(
             brand_id=nissan.id,
-            segment_id=c_suv.id,
+            segment_id=seg_j.id,  # Qashqai → J (SUV/crossover)
             name="Qashqai",
             body_type="SUV",
             start_year=2021,
@@ -74,7 +88,7 @@ def reset_and_seed() -> None:
         )
         m_tu = VehicleModel(
             brand_id=hyundai.id,
-            segment_id=c_suv.id,
+            segment_id=seg_j.id,  # Tucson → J
             name="Tucson",
             body_type="SUV",
             start_year=2021,
@@ -82,12 +96,15 @@ def reset_and_seed() -> None:
         )
         m_320 = VehicleModel(
             brand_id=bmw.id,
-            segment_id=premium_sedan.id,
+            segment_id=seg_d.id,  # 3-Series → D (premium mid-size sedan)
             name="320i",
             body_type="Sedan",
             start_year=2020,
             end_year=None,
         )
+        # keep seg_c referenced so lint doesn't complain and future models can
+        # attach to it without a dictionary lookup
+        _ = seg_c
         db.add_all([m_cc, m_qa, m_tu, m_320])
         db.flush()
 

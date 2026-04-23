@@ -1,12 +1,45 @@
 "use client";
 
-import type { RecommendationFormState } from "@/types/araba-iq-recommendation";
-import type { SegmentItem } from "@/types/araba-iq-recommendation";
+import type {
+  RecommendationFormState,
+  SegmentItem,
+} from "@/types/araba-iq-recommendation";
 import type { ArabaIqRecommendationMessages } from "@/lib/araba-iq-messages";
-import type { PresetApplyMeta } from "@/lib/recommendation-presets";
-import { FEATURE_SLUGS } from "./feature-slugs";
-import { PrioritySlider } from "./PrioritySlider";
+import type { PresetApplyMeta, PresetId } from "@/lib/recommendation-presets";
 import { RecommendationPresetBar } from "./RecommendationPresetBar";
+import {
+  SEGMENT_CATALOG,
+  classifySegment,
+  type SegmentCode,
+} from "@/lib/segment-catalog";
+import { cn } from "@/lib/utils";
+
+/**
+ * `/recommendations` form — simplified per product direction:
+ *
+ * The previous incarnation surfaced every low-level API knob (upper budget,
+ * fuel preference, city-usage ratio, 7 priority sliders, required/preferred
+ * feature checkboxes, strict_required, result limit, debug toggle). That
+ * overwhelmed first-time users and the priorities were barely discriminating.
+ *
+ * The new form is intentionally minimal:
+ *
+ *   ┌────────────────────────────────────────┐
+ *   │ 1. Senaryo seçimi (preset grid)        │ ← primary choice
+ *   ├────────────────────────────────────────┤
+ *   │ 2. Segment filtresi (chip toggles)     │ ← optional refinement
+ *   └────────────────────────────────────────┘
+ *
+ * All removed fields (budget_max, fuel_preference, priorities, features,
+ * strict_required, limit, include_debug) remain in the form state and are
+ * populated either by the chosen preset or by `defaultRecommendationFormState`.
+ * This keeps the `POST /recommendations` request body intact without
+ * exposing the knobs in the UI.
+ *
+ * Styling follows the Midnight Showroom design doc: no 1px dividers,
+ * surface-ladder shifts define block boundaries, ghost-border on chips
+ * instead of framed checkboxes.
+ */
 
 interface Props {
   value: RecommendationFormState;
@@ -16,19 +49,31 @@ interface Props {
   t: ArabaIqRecommendationMessages;
   onPresetApply: (next: RecommendationFormState, meta: PresetApplyMeta) => void;
   disabled?: boolean;
-}
-
-function toggleSlug(list: string[], slug: string): string[] {
-  return list.includes(slug) ? list.filter((s) => s !== slug) : [...list, slug];
+  /** Last applied preset — used to highlight the active card. */
+  activePresetId?: PresetId | null;
 }
 
 function toggleSegment(ids: number[], id: number): number[] {
   return ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
 }
 
-function featureLabel(t: ArabaIqRecommendationMessages, slug: string): string {
-  const map = t.featureLabels as Record<string, string>;
-  return map[slug] ?? slug;
+/**
+ * Order backend segments by the canonical European A→M order. Backend may
+ * return them by insertion order or alphabetical — we always want them in
+ * the same slot so returning visitors can rely on muscle memory.
+ *
+ * When a backend row doesn't map to a canonical code (legacy name like
+ * "Premium Sedan" or "C-SUV"), it's pushed to the tail, still alphabetical.
+ */
+const SEGMENT_CODE_ORDER: SegmentCode[] = SEGMENT_CATALOG.map((s) => s.code);
+function sortSegmentsCanonical(segments: SegmentItem[]): SegmentItem[] {
+  const withOrder = segments.map((seg) => {
+    const code = classifySegment(seg.name);
+    const idx = code ? SEGMENT_CODE_ORDER.indexOf(code) : -1;
+    return { seg, idx: idx === -1 ? 99 + seg.name.charCodeAt(0) : idx };
+  });
+  withOrder.sort((a, b) => a.idx - b.idx);
+  return withOrder.map((x) => x.seg);
 }
 
 export function RecommendationForm({
@@ -39,96 +84,52 @@ export function RecommendationForm({
   t,
   onPresetApply,
   disabled,
+  activePresetId,
 }: Props) {
   const set = (patch: Partial<RecommendationFormState>) => onChange({ ...s, ...patch });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
+      {/* ── 1. Preset picker ─────────────────────────────────────── */}
       <RecommendationPresetBar
         current={s}
         t={t}
-        onApply={(next, meta) => onPresetApply(next, meta)}
-        disabled={!!disabled}
+        onApply={onPresetApply}
+        disabled={disabled}
+        activeId={activePresetId}
       />
 
-      <section className="rounded-2xl border border-[#B7C396]/40 bg-white/80 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#2d3a2a] mb-4">{t.formBasics}</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm">
-            <span className="text-[#2d3a2a]/80">{t.budgetMax}</span>
-            <input
-              type="number"
-              min={0}
-              step={50000}
-              value={s.budget_max || ""}
-              disabled={disabled}
-              onChange={(e) => set({ budget_max: Number(e.target.value) || 0 })}
-              className="mt-1 w-full rounded-lg border border-[#B7C396]/50 px-3 py-2 text-[#2d3a2a] disabled:opacity-50"
-            />
-          </label>
-          <label className="block text-sm">
-            <span className="text-[#2d3a2a]/80">{t.fuelPref}</span>
-            <select
-              value={s.fuel_preference}
-              disabled={disabled}
-              onChange={(e) => set({ fuel_preference: e.target.value })}
-              className="mt-1 w-full rounded-lg border border-[#B7C396]/50 px-3 py-2 text-[#2d3a2a] disabled:opacity-50"
-            >
-              <option value="">{t.fuelAny}</option>
-              <option value="Hybrid">{t.fuelHybrid}</option>
-              <option value="Benzin">{t.fuelGasoline}</option>
-              <option value="Dizel">{t.fuelDiesel}</option>
-            </select>
-          </label>
-          <label className="block text-sm sm:col-span-2">
-            <span className="text-[#2d3a2a]/80">{t.cityRatio}</span>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={s.city_usage_ratio}
-              disabled={disabled}
-              onChange={(e) => set({ city_usage_ratio: Number(e.target.value) })}
-              className="mt-2 w-full accent-[#5a7a52]"
-            />
-            <div className="text-xs font-mono text-[#5a7a52]">{s.city_usage_ratio}%</div>
-          </label>
-          <label className="block text-sm">
-            <span className="text-[#2d3a2a]/80">{t.resultLimit}</span>
-            <input
-              type="number"
-              min={1}
-              max={50}
-              value={s.limit}
-              disabled={disabled}
-              onChange={(e) => set({ limit: Math.min(50, Math.max(1, Number(e.target.value) || 10)) })}
-              className="mt-1 w-full rounded-lg border border-[#B7C396]/50 px-3 py-2 disabled:opacity-50"
-            />
-          </label>
-        </div>
-      </section>
+      {/* ── 2. Segment filter ────────────────────────────────────── */}
+      <section>
+        <p className="superscript text-primary mb-3">{t.segment}</p>
+        <h2 className="font-heading text-[22px] font-bold text-on-surface tracking-tight">
+          {t.segmentHeading ?? "Segment filtresi"}
+        </h2>
+        <p className="font-sans text-[14px] text-on-surface-variant mt-2 max-w-[560px] leading-relaxed">
+          {t.segmentHint}
+        </p>
 
-      <section className="rounded-2xl border border-[#B7C396]/40 bg-white/80 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#2d3a2a] mb-4">{t.priorities}</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <PrioritySlider label={t.performance} value={s.performance_priority} onChange={(v) => set({ performance_priority: v })} disabled={disabled} />
-          <PrioritySlider label={t.economy} value={s.economy_priority} onChange={(v) => set({ economy_priority: v })} disabled={disabled} />
-          <PrioritySlider label={t.comfort} value={s.comfort_priority} onChange={(v) => set({ comfort_priority: v })} disabled={disabled} />
-          <PrioritySlider label={t.family} value={s.family_priority} onChange={(v) => set({ family_priority: v })} disabled={disabled} />
-          <PrioritySlider label={t.prestige} value={s.prestige_priority} onChange={(v) => set({ prestige_priority: v })} disabled={disabled} />
-          <PrioritySlider label={t.resale} value={s.resale_priority} onChange={(v) => set({ resale_priority: v })} disabled={disabled} />
-          <PrioritySlider label={t.maintenance} value={s.maintenance_sensitivity} onChange={(v) => set({ maintenance_sensitivity: v })} disabled={disabled} />
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-[#B7C396]/40 bg-white/80 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#2d3a2a] mb-2">{t.segment}</h2>
-        <p className="text-xs text-[#2d3a2a]/60 mb-3">{t.segmentHint}</p>
         {segmentsLoading ? (
-          <p className="text-sm text-[#2d3a2a]/50">{t.segmentsLoading}</p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="h-8 w-20 rounded-full animate-shimmer"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(90deg, #1f2539 25%, #2e3447 50%, #1f2539 75%)",
+                  backgroundSize: "200% 100%",
+                }}
+              />
+            ))}
+          </div>
+        ) : segments.length === 0 ? (
+          <p className="mt-4 font-sans text-[13px] text-on-surface-variant/70">
+            {t.segmentsLoading}
+          </p>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {segments.map((seg) => {
+          <div className="mt-6 flex flex-wrap gap-2">
+            {sortSegmentsCanonical(segments).map((seg) => {
               const on = s.segment_ids.includes(seg.id);
               return (
                 <button
@@ -136,9 +137,16 @@ export function RecommendationForm({
                   type="button"
                   disabled={disabled}
                   onClick={() => set({ segment_ids: toggleSegment(s.segment_ids, seg.id) })}
-                  className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
-                    on ? "bg-[#5a7a52] text-white" : "bg-[#E0E7D7] text-[#2d3a2a] hover:bg-[#d4ddc8]"
-                  }`}
+                  aria-pressed={on}
+                  className={cn(
+                    "inline-flex items-center rounded-full font-sans font-semibold leading-none",
+                    "text-[13px] px-4 py-2",
+                    "transition-all duration-300 ease-in-out",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    on
+                      ? "bg-primary/18 text-primary shadow-glow"
+                      : "ghost-border text-on-surface-variant hover:text-primary",
+                  )}
                 >
                   {seg.name}
                 </button>
@@ -146,83 +154,21 @@ export function RecommendationForm({
             })}
           </div>
         )}
-      </section>
 
-      <section className="rounded-2xl border border-[#B7C396]/40 bg-white/80 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#2d3a2a] mb-2">{t.equipment}</h2>
-        <p className="text-xs text-[#2d3a2a]/60 mb-3">{t.equipmentHint}</p>
-        <div className="mb-4">
-          <h3 className="text-sm font-medium text-[#2d3a2a] mb-2">{t.required}</h3>
-          <div className="flex flex-wrap gap-2">
-            {FEATURE_SLUGS.map((slug) => {
-              const on = s.required_features.includes(slug);
-              return (
-                <button
-                  key={`r-${slug}`}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() =>
-                    set({
-                      required_features: toggleSlug(s.required_features, slug),
-                      preferred_features: s.preferred_features.filter((x) => x !== slug),
-                    })
-                  }
-                  className={`rounded-lg border px-2.5 py-1 text-xs disabled:opacity-50 ${
-                    on ? "border-[#5a7a52] bg-[#5a7a52]/15 text-[#2d3a2a]" : "border-[#B7C396]/50 text-[#2d3a2a]/80"
-                  }`}
-                >
-                  {featureLabel(t, slug)}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <div>
-          <h3 className="text-sm font-medium text-[#2d3a2a] mb-2">{t.preferredBonus}</h3>
-          <div className="flex flex-wrap gap-2">
-            {FEATURE_SLUGS.map((slug) => {
-              if (s.required_features.includes(slug)) return null;
-              const on = s.preferred_features.includes(slug);
-              return (
-                <button
-                  key={`p-${slug}`}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => set({ preferred_features: toggleSlug(s.preferred_features, slug) })}
-                  className={`rounded-lg border px-2.5 py-1 text-xs disabled:opacity-50 ${
-                    on ? "border-amber-600/50 bg-amber-50 text-[#2d3a2a]" : "border-[#B7C396]/50 text-[#2d3a2a]/80"
-                  }`}
-                >
-                  {featureLabel(t, slug)}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-[#B7C396]/40 bg-white/80 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#2d3a2a] mb-4">{t.options}</h2>
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={s.strict_required}
-            disabled={disabled}
-            onChange={(e) => set({ strict_required: e.target.checked })}
-            className="h-4 w-4 accent-[#5a7a52]"
-          />
-          <span className="text-sm text-[#2d3a2a]">{t.strictRequired}</span>
-        </label>
-        <label className="flex items-center gap-3 cursor-pointer mt-3">
-          <input
-            type="checkbox"
-            checked={s.include_debug}
-            disabled={disabled}
-            onChange={(e) => set({ include_debug: e.target.checked })}
-            className="h-4 w-4 accent-[#5a7a52]"
-          />
-          <span className="text-sm text-[#2d3a2a]">{t.includeDebug}</span>
-        </label>
+        {s.segment_ids.length > 0 && (
+          <p className="mt-4 font-sans text-[12px] text-on-surface-variant/80">
+            <span className="font-semibold text-on-surface">{s.segment_ids.length}</span>{" "}
+            {t.segmentSelected ?? "segment seçildi"}
+            {" · "}
+            <button
+              type="button"
+              onClick={() => set({ segment_ids: [] })}
+              className="text-primary hover:underline"
+            >
+              {t.segmentClear ?? "Temizle"}
+            </button>
+          </p>
+        )}
       </section>
     </div>
   );

@@ -35,7 +35,9 @@ export const defaultRecommendationFormState = (): RecommendationFormState => ({
   segment_ids: [],
   strict_required: false,
   include_debug: false,
-  limit: 10,
+  // Kullanıcı "tüm sonuçları" istediği için limit default max'a çekildi.
+  // `RecommendationForm` artık bunu UI'da göstermiyor.
+  limit: 50,
 });
 
 export function formStateToRequestBody(s: RecommendationFormState): RecommendationRequestBody {

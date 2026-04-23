@@ -10,17 +10,16 @@ interface MobileTabBarProps {
 }
 
 /**
- * Mobile bottom tab bar.
+ * Midnight Showroom mobile bottom tab bar.
  *
  * - Visible only on <768px (hidden md:block inverse)
- * - Fixed to viewport bottom, Canvas white, 1px Hairline top border
- * - Three-tab native-app rhythm: Home · Compare · Garage
- * - Active tab switches icon stroke + label colour to Rausch and
- *   draws a 2px Rausch pill indicator above the icon
+ * - Fixed to viewport bottom, **glassmorphism panel** (surface-variant
+ *   @ 40% + 20px backdrop-blur) for the native-app rhythm
+ * - **No border-top** (doc §2 "no-line rule") — the blur carries the edge
+ * - Three-tab primary navigation: Home · Compare · Garage
+ * - Active tab lights the icon and label with primary indigo and draws
+ *   a 2px primary-gradient pill indicator above the icon
  * - Safe-area inset handled via `pb-[env(safe-area-inset-bottom)]`
- *
- * The locale switcher and secondary actions remain in the top Header;
- * this bar is dedicated to primary page navigation.
  */
 export default function MobileTabBar({ messages }: MobileTabBarProps) {
   const pathname = usePathname();
@@ -43,7 +42,7 @@ export default function MobileTabBar({ messages }: MobileTabBarProps) {
       aria-label="Primary mobile"
       className={cn(
         "md:hidden fixed bottom-0 left-0 right-0 z-50",
-        "bg-canvas border-t border-hairline",
+        "glass-panel",
         "pb-[env(safe-area-inset-bottom)]",
       )}
     >
@@ -57,15 +56,15 @@ export default function MobileTabBar({ messages }: MobileTabBarProps) {
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex-1 flex flex-col items-center justify-center gap-1 pt-2 pb-2.5 h-16",
-                  "font-sans text-[12px] font-medium transition-colors",
-                  active ? "text-rausch" : "text-ash",
+                  "font-sans text-[12px] font-medium transition-colors duration-300",
+                  active ? "text-primary" : "text-on-surface-variant",
                 )}
               >
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "h-[2px] w-6 -mt-1 rounded-full transition-opacity",
-                    active ? "bg-rausch opacity-100" : "opacity-0",
+                    "h-[2px] w-6 -mt-1 rounded-full primary-gradient-horizontal transition-opacity duration-300",
+                    active ? "opacity-100" : "opacity-0",
                   )}
                 />
                 <Icon

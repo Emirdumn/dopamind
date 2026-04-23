@@ -1,14 +1,31 @@
-# ArabaIQ — Airbnb Design System Migration · TODO
+# ArabaIQ — "Midnight Showroom" Design System · TODO
 
 > **Status key:** `[ ]` pending · `[~]` in progress · `[x]` done · `[-]` deferred
+>
+> **Theme:** Dark blue-black canvas, MD3 token vocabulary, electric indigo
+> primary (`#c0c1ff → #8083ff` gradient), editorial dual-typeface (Plus
+> Jakarta Sans display + Inter body), glassmorphism nav, **no 1px dividers**
+> (surface-ladder shifts only). Supersedes both the Airbnb light palette
+> (shipped briefly in Faz 1-4) and the Airbnb-on-dark revert (Rausch coral
+> on near-black). See `lessons.md` → "Midnight Showroom adoption".
 
 ---
 
 ## Faz 1 — Design Tokens (foundation)
 
-- [x] `frontend/tailwind.config.ts` — Airbnb palette, Inter font stack, radius/shadow scale
+- [x] `frontend/tailwind.config.ts` — Airbnb token structure, Inter font stack, radius/shadow scale
 - [x] `frontend/src/app/globals.css` — root CSS variables, Inter @import, scrollbar, selection tint, `.shadow-lift`, `.brand-gradient`, `.superscript`
-- [x] Legacy token names (`background`, `foreground`, `surface`, `muted`, `accent`, `primary`) repointed to Airbnb values for backward compatibility
+- [x] Legacy token names (`background`, `foreground`, `surface`, `muted`, `accent`, `primary`) repointed for backward compatibility
+- [x] **Dark palette swap (2026-04-21, post-Faz 4b):** canvas `#0b0b0d`, subsurface `#141418`, hairline `#2a2a2e`, ink `#f5f5f7`, ash `#9a9aa4`, stone `#3f3f44`, error `#ff5d3c`, info `#60a5ff`. Rausch preserved. Shadows re-tuned for dark. `color-scheme: dark`. Token names unchanged so every Phase 2-4 component theme-swaps without edits.
+
+## Faz M0 — Midnight Showroom token foundation (2026-04-21)
+
+- [x] `frontend/src/app/fonts.ts` — Plus Jakarta Sans added (`--font-jakarta`, weights 400-800) alongside Inter for dual-typeface system
+- [x] `frontend/tailwind.config.ts` — MD3 surface ladder (`surface-dim` → `surface-container-highest`), primary indigo gradient (`#c0c1ff → #8083ff`), `on-surface #dce1fb` (no pure white), `outline-variant #434758` (ghost border substrate), MD3 error palette, `secondary-container` chip tokens, ambient shadow recipes (40-60px blur @ 4-8% tinted), `bg-gradient-primary` + `bg-light-bleed` image utilities, default transition 300ms ease-in-out
+- [x] `frontend/src/app/globals.css` — root CSS variables for the full MD3 palette, Jakarta imports, `.glass-nav` / `.glass-panel` / `.primary-gradient` / `.light-bleed` / `.ghost-border-bottom` / `.ghost-border` / `.shadow-ambient` utilities, Jakarta on `h1`-`h3`, indigo selection tint
+- [x] `frontend/src/app/[locale]/layout.tsx` — `jakarta.variable` attached to `<html>` alongside `inter.variable`
+- [x] Legacy tokens (canvas / subsurface / hairline / ink / charcoal / ash / mute / stone / rausch) repointed to Midnight Showroom equivalents so every Phase 2-4 utility class re-themes automatically
+- [x] Rausch coral retired — `bg-rausch` / `text-rausch` now resolve to MD3 primary indigo; doc update in `lessons.md` → "Midnight Showroom adoption"
 
 ## Faz 2 — UI Primitives
 
@@ -37,9 +54,11 @@
 - [ ] Mobile bottom tab bar: Home · Compare · Garage (24px icons + 12px labels)
 
 ### 4b · Compare (`[locale]/compare/page.tsx` + `CompareClient.tsx`)
-- [ ] `VehicleSelectionModal` → white bg, 20px radius, `.shadow-lift`, 24px padding, Rausch submit
-- [ ] Compare table → amenity-grid style, hairline row separators, 16px row padding, icon+label pattern
-- [ ] **"ArabaIQ Top Pick" lockup** on algorithm winner: centered large score (52px 700) + dual laurel SVG + `TOP PICK` superscript + Ash sub-label
+- [x] `VehicleSelectionModal` → Canvas bg, 20px radius (`rounded-xl`), `.shadow-lift`, Ink/40 backdrop, inline search icon + close button, hairline-separated result rows with subsurface hover
+- [x] Compare table → amenity-grid style: 14px-rounded hairline container, Ash uppercase column headers, Ink cell text, subtle canvas/subsurface zebra, sticky-left field column, icon chips (Rausch check / Mute minus) for equipment booleans
+- [x] **"ArabaIQ Top Pick" lockup** on algorithm winner: centered 56px 700 wins count + dual laurel SVG (`Laurel.tsx`) + `ARABAIQ TOP PICK` superscript + Ink car name + Ash `{wins}/{total} kategoride önde` sub-label + dimensions detail
+- [x] `compare-top-pick.ts` — wins-per-dimension aggregator (Technical · Performance · Market · Equipment); returns `null` on ties or <2 measurable dimensions (honest: no ceremony without a clear winner)
+- [x] Top Pick echo markers: Rausch 6px dot on winner's chip (sticky header) + column header + "Top Pick" superscript on winner's summary card + Ink border ring on chip
 
 ### 4c · Recommendations
 - [ ] `recommendations/page.tsx` — layout reflow with sticky right-rail booking-panel style debug

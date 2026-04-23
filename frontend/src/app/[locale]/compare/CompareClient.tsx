@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
-import Link from "next/link";
+import { useEffect, useState, useCallback, useMemo, Fragment } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { Loader2, X, ArrowLeft } from "lucide-react";
+import { Loader2, X, Plus, Check, Minus, ChevronDown } from "lucide-react";
 import { postCompare } from "@/lib/araba-iq-client";
 import type { CarCompareResponse } from "@/lib/araba-iq-client";
 import { useCompareCarsStore, MAX_COMPARE } from "@/stores/compare-cars";
@@ -25,19 +24,205 @@ import {
   equipmentRichLeader,
   type TabLeaderResult,
 } from "@/lib/compare-tab-leaders";
+import { computeTopPick, type TopPickResult } from "@/lib/compare-top-pick";
+import { segmentLabel } from "@/lib/segment-catalog";
+import VehicleSelectionModal from "@/components/compare/VehicleSelectionModal";
+import CarHeroImage from "@/components/compare/CarHeroImage";
+import Laurel from "@/components/compare/Laurel";
+import Button from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 
-type CompareTab = "summary" | "technical" | "performance" | "market" | "equipment";
+/* ════════════════════════════════════════════════════════════════════════
+   Apple-style vertical comparison — Midnight Showroom edition.
 
-function TabLeaderBox({ t, leader }: { t: ReturnType<typeof getArabaIqMessages>["compare"]; leader: TabLeaderResult }) {
+   The old layout used tab navigation and horizontal pivot tables. We're
+   replacing that with a single long vertical scroll modeled after Apple's
+   iPhone compare page:
+
+     ┌──────┬─────────────┬─────────────┬─────────────┐
+     │      │ [Change ▼]  │ [Change ▼]  │ [Change ▼]  │  <- column head
+     │      │  <CAR PIC>  │  <CAR PIC>  │  <CAR PIC>  │
+     │      │  Brand /    │  Brand /    │  Brand /    │
+     │      │  Model      │  Model      │  Model      │
+     ├──────┴─────────────┴─────────────┴─────────────┤
+     │   ── Performance ──                            │  <- section band
+     ├──────┬─────────────┬─────────────┬─────────────┤
+     │ 0-100│ 7.6s        │ 9.2s        │ 9.9s        │  <- spec row
+     │ HP   │ 170         │ 158         │ 140         │
+     │ ...  │             │             │             │
+     ├──────┴─────────────┴─────────────┴─────────────┤
+     │   ── Technical ──                              │
+     ├──────┬─────────────┬─────────────┬─────────────┤
+     │ ...                                            │
+
+   All columns live in one CSS Grid with a shared `gridTemplateColumns`, so
+   values align pixel-perfect across every section. Section headers and
+   leader cards use `col-span-full` to bridge the grid without disturbing
+   the column widths. No 1px borders — tonal shifts alone define rows
+   (doc §2 "No-Line Rule").
+   ════════════════════════════════════════════════════════════════════════ */
+
+/** Small inline "who's leading this section" card shown above spec grids. */
+function LeaderCard({ leader }: { leader: TabLeaderResult }) {
   return (
-    <div className="mb-4 rounded-xl border border-[#5a7a52]/35 bg-gradient-to-br from-[#5a7a52]/10 to-white px-4 py-3 shadow-sm">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-[#5a7a52]">{t.tabLeaderWhoAhead}</p>
-      <p className="text-sm font-semibold text-[#2d3a2a] mt-1">{leader.headline}</p>
-      <p className="text-base font-bold text-[#5a7a52] mt-0.5 leading-snug">{leader.leaderShortName}</p>
-      <p className="text-xs text-[#2d3a2a]/70 mt-1">{leader.detail}</p>
+    <div className="col-span-full mb-3 rounded-lg bg-surface-container-low px-5 py-4">
+      <p className="superscript text-on-surface-variant mb-1">{leader.headline}</p>
+      <p className="font-heading text-[20px] font-semibold text-on-surface tracking-[-0.018em]">
+        {leader.leaderShortName}
+      </p>
+      <p className="font-sans text-[14px] font-medium text-on-surface-variant mt-1">
+        {leader.detail}
+      </p>
     </div>
   );
 }
+
+/**
+ * ArabaIQ Top Pick — Guest-Favorite-style lockup with Midnight Showroom skin.
+ * Centered laurel-wrapped numeric moment, floats over a primary radial
+ * light-bleed (doc §4). Spans full width above the vertical compare grid.
+ */
+function TopPickLockup({
+  pick,
+  badge,
+  subtitlePattern,
+  dimensionsLabel,
+}: {
+  pick: TopPickResult;
+  badge: string;
+  subtitlePattern: string;
+  dimensionsLabel: string;
+}) {
+  return (
+    <section
+      aria-label={badge}
+      className="relative mb-10 flex flex-col items-center text-center py-10 overflow-hidden"
+    >
+      <div aria-hidden="true" className="absolute inset-0 light-bleed-strong pointer-events-none" />
+
+      <div className="relative flex items-end justify-center gap-2 text-primary">
+        <Laurel size={64} />
+        <span
+          className="font-heading font-bold text-on-surface tabular leading-none"
+          style={{ fontSize: 72, letterSpacing: "-0.028em" }}
+        >
+          {pick.wins}
+        </span>
+        <Laurel size={64} mirror />
+      </div>
+
+      <p className="superscript text-primary mt-5 relative">{badge}</p>
+
+      <h3 className="relative font-heading text-[24px] font-semibold text-on-surface mt-2 tracking-[-0.02em]">
+        {pick.leaderShortName}
+      </h3>
+
+      <p className="relative font-sans text-[14px] font-medium text-on-surface-variant mt-1.5">
+        {interpolate(subtitlePattern, { wins: pick.wins, total: pick.totalDimensions })}
+      </p>
+
+      <p className="relative font-sans text-[12px] font-medium text-mute mt-1">
+        <span className="sr-only">{dimensionsLabel}: </span>
+        {pick.dimensionsWon.join(" · ")}
+      </p>
+    </section>
+  );
+}
+
+/* ─────────────────────── Sub-components within the grid ─────────────── */
+
+type CarBlock = CarCompareResponse["cars"][number];
+
+/**
+ * Column header — "Change" dropdown + hero image + name block.
+ * Rendered as a single grid cell whose height adapts to the tallest sibling
+ * in the header row. Hover surfaces a "Remove" affordance.
+ */
+function ColumnHeader({
+  car,
+  isPick,
+  topPickLabel,
+  changeLabel,
+  removeLabel,
+  segmentLabelText,
+  onChange,
+  onRemove,
+}: {
+  car: CarBlock;
+  isPick: boolean;
+  topPickLabel: string;
+  changeLabel: string;
+  removeLabel: string;
+  segmentLabelText: string;
+  onChange: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative flex flex-col gap-3 rounded-lg p-4 transition duration-300 group",
+        isPick ? "bg-surface-container-high shadow-glow" : "bg-surface-container-low",
+      )}
+    >
+      {/* Top bar: Change dropdown (left) + Remove (right, hover-revealed) */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onChange}
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 bg-surface-container/60 hover:bg-surface-container-highest font-sans text-[11px] font-semibold tracking-[0.04em] uppercase text-on-surface-variant hover:text-on-surface transition duration-300"
+        >
+          {changeLabel}
+          <ChevronDown size={12} strokeWidth={2} />
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={removeLabel}
+          className="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant opacity-0 group-hover:opacity-100 hover:text-primary hover:bg-surface-container-highest transition duration-300"
+        >
+          <X size={14} strokeWidth={2} />
+        </button>
+      </div>
+
+      {/* Hero image — brand-tinted gradient fallback if no /cars/ asset */}
+      <CarHeroImage brand={car.brand} model={car.model} alt={car.display_name} />
+
+      {/* Name block */}
+      <div className="px-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="superscript text-on-surface-variant">{segmentLabelText}</p>
+          {isPick && (
+            <span aria-label={topPickLabel} className="superscript text-primary">
+              Top Pick
+            </span>
+          )}
+        </div>
+        <h3 className="font-heading text-[17px] font-bold text-on-surface leading-tight tracking-[-0.018em] mt-1">
+          {car.brand} {car.model}
+        </h3>
+        <p className="font-sans text-[12px] font-medium text-on-surface-variant mt-1 truncate">
+          {car.year} · {car.trim_name}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Section title band — spans all columns, uses surface-container-high to
+ * create a one-step-up tonal lift that separates sections without a border.
+ */
+function SectionBand({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="col-span-full mt-12 mb-4">
+      <h3 className="font-heading text-[22px] font-semibold text-on-surface tracking-[-0.02em]">
+        {children}
+      </h3>
+    </div>
+  );
+}
+
+/* ═════════════════════════════ Main client ═════════════════════════════ */
 
 export default function CompareClient() {
   const params = useParams();
@@ -51,13 +236,14 @@ export default function CompareClient() {
   const clear = useCompareCarsStore((s) => s.clear);
   const replaceAll = useCompareCarsStore((s) => s.replaceAll);
 
-  const [tab, setTab] = useState<CompareTab>("summary");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CarCompareResponse | null>(null);
   const [equipmentOnlyDiff, setEquipmentOnlyDiff] = useState(false);
   const [equipmentCategory, setEquipmentCategory] = useState<string>("");
+  const [modalOpen, setModalOpen] = useState(false);
 
+  // ── Sync ?ids=1,2,3 URL param into the store on mount ─────────────────
   useEffect(() => {
     const raw = searchParams.get("ids");
     if (!raw) return;
@@ -96,45 +282,23 @@ export default function CompareClient() {
     }
   }, [ids, runCompare]);
 
-  const tabs: { id: CompareTab; label: string }[] = [
-    { id: "summary", label: t.tabSummary },
-    { id: "technical", label: t.tabTechnical },
-    { id: "performance", label: t.tabPerformance },
-    { id: "market", label: t.tabMarket },
-    { id: "equipment", label: t.tabEquipment },
-  ];
-
-  const highlights =
-    result && result.cars.length >= 2
-      ? buildCompareHighlights(
-          result,
-          {
-            fuel: t.highlightFuel,
-            luggage: t.highlightLuggage,
-            priceLow: t.highlightPrice,
-            equipment: t.highlightEquipment,
-          },
-          locale,
-        )
-      : [];
-
+  // ── Derived data ──────────────────────────────────────────────────────
   const equipment = result?.equipment_comparison as
-    | {
-        rows?: EquipmentRow[];
-        truthy_counts_by_variant_id?: Record<string, number>;
-      }
+    | { rows?: EquipmentRow[]; truthy_counts_by_variant_id?: Record<string, number> }
     | undefined;
 
-  const carIds = useMemo(() => (result ? result.cars.map((c) => c.car_variant_id) : []), [result]);
+  const carIds = useMemo(
+    () => (result ? result.cars.map((c) => c.car_variant_id) : []),
+    [result],
+  );
 
-  const equipmentRows: EquipmentRow[] = useMemo(() => {
-    const rows = equipment?.rows;
-    if (!rows?.length) return [];
-    return rows;
-  }, [equipment?.rows]);
+  const equipmentRows: EquipmentRow[] = useMemo(() => equipment?.rows ?? [], [equipment?.rows]);
 
   const equipmentAdvantageCount = useMemo(
-    () => (equipmentRows.length && carIds.length >= 2 ? countUniqueEquipmentAdvantages(equipmentRows, carIds) : 0),
+    () =>
+      equipmentRows.length && carIds.length >= 2
+        ? countUniqueEquipmentAdvantages(equipmentRows, carIds)
+        : 0,
     [equipmentRows, carIds],
   );
 
@@ -164,299 +328,438 @@ export default function CompareClient() {
     [result, t, locale],
   );
 
-  const renderPivot = (data: Record<string, Record<string, unknown>>, leader: TabLeaderResult | null) => {
+  const topPick = useMemo(() => (result ? computeTopPick(result, t, locale) : null), [result, t, locale]);
+
+  const highlights =
+    result && result.cars.length >= 2
+      ? buildCompareHighlights(
+          result,
+          {
+            fuel: t.highlightFuel,
+            luggage: t.highlightLuggage,
+            priceLow: t.highlightPrice,
+            equipment: t.highlightEquipment,
+          },
+          locale,
+        )
+      : [];
+
+  // ── Grid column template — shared across all sections so columns align
+  //    pixel-perfect top-to-bottom. `minmax(…, 1fr)` lets wider screens
+  //    breathe; narrower ones kick in horizontal scroll via the wrapper. ──
+  const nCols = result?.cars.length ?? 0;
+  const gridTemplate =
+    nCols > 0
+      ? `minmax(170px, 220px) repeat(${nCols}, minmax(220px, 1fr))`
+      : undefined;
+
+  /**
+   * Render a key-value spec block (performance / technical / market) as a
+   * sequence of grid rows. Each row is: label cell + N value cells.
+   */
+  const renderSpecRows = (data: Record<string, Record<string, unknown>>) => {
     if (!result) return null;
     const keys = Object.keys(data);
-    return (
-      <>
-        {leader && <TabLeaderBox t={t} leader={leader} />}
-        <div className="overflow-x-auto overscroll-x-contain rounded-xl border border-[#B7C396]/30 bg-white shadow-sm max-w-full touch-pan-x">
-          <table className="min-w-[280px] w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#B7C396]/30 bg-[#E0E7D7]/60">
-                <th className="text-left p-2.5 min-h-[2.75rem] align-middle font-semibold text-[#2d3a2a] sticky left-0 bg-[#E0E7D7]/95 z-10 shadow-[2px_0_6px_-2px_rgba(45,58,42,0.08)]">
-                  {t.field}
-                </th>
-                {result.cars.map((c) => (
-                  <th
-                    key={c.car_variant_id}
-                    className="text-left p-2.5 min-h-[2.75rem] align-middle font-semibold text-[#2d3a2a] min-w-[112px] max-w-[200px]"
-                  >
-                    <span className="line-clamp-2">{c.brand}</span> <span className="line-clamp-2">{c.model}</span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {keys.map((key) => (
-                <tr key={key} className="border-b border-[#B7C396]/15 hover:bg-[#f7f9f4]/80">
-                  <td className="p-2.5 min-h-[2.75rem] align-middle text-[#2d3a2a]/85 font-medium sticky left-0 bg-white/98 z-10 shadow-[2px_0_6px_-2px_rgba(45,58,42,0.06)]">
-                    {key}
-                  </td>
-                  {result.cars.map((c) => {
-                    const row = data[key];
-                    const v = row?.[String(c.car_variant_id)];
-                    return (
-                      <td key={c.car_variant_id} className="p-2.5 min-h-[2.75rem] align-middle text-[#2d3a2a] break-words">
-                        {formatCellValue(v)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    return keys.map((key, i) => {
+      const stripe = i % 2 === 1;
+      const rowBg = stripe ? "bg-surface-container" : "bg-surface-container-low";
+      return (
+        <Fragment key={key}>
+          <div
+            className={cn(
+              "px-5 py-4 font-sans text-[12.5px] font-semibold tracking-[0.01em] text-on-surface-variant self-center",
+              rowBg,
+              i === 0 && "rounded-tl-lg",
+              i === keys.length - 1 && "rounded-bl-lg",
+            )}
+          >
+            {key}
+          </div>
+          {result.cars.map((c, idx) => {
+            const v = data[key]?.[String(c.car_variant_id)];
+            return (
+              <div
+                key={c.car_variant_id}
+                className={cn(
+                  "px-5 py-4 font-sans text-[14px] font-semibold text-on-surface tabular self-center",
+                  rowBg,
+                  i === 0 && idx === nCols - 1 && "rounded-tr-lg",
+                  i === keys.length - 1 && idx === nCols - 1 && "rounded-br-lg",
+                )}
+              >
+                {formatCellValue(v) || t.emptyCell}
+              </div>
+            );
+          })}
+        </Fragment>
+      );
+    });
+  };
+
+  /** Meta rows that come directly off the `CompareCarBlock` header (not the
+   *  `*_comparison` dicts). Year, trim, segment — gives the "overview" band
+   *  at the top of the grid just under the column headers. */
+  const renderOverviewRows = () => {
+    if (!result) return null;
+    const rows: Array<{ label: string; pick: (c: CarBlock) => string }> = [
+      { label: t.columnSegment, pick: (c) => segmentLabel(c.segment, locale) || c.segment },
+      { label: t.columnYear, pick: (c) => String(c.year) },
+      { label: t.columnTrim, pick: (c) => c.trim_name },
+    ];
+    return rows.map((row, i) => {
+      const stripe = i % 2 === 1;
+      const rowBg = stripe ? "bg-surface-container" : "bg-surface-container-low";
+      return (
+        <Fragment key={row.label}>
+          <div
+            className={cn(
+              "px-5 py-4 font-sans text-[12.5px] font-semibold tracking-[0.01em] text-on-surface-variant self-center",
+              rowBg,
+              i === 0 && "rounded-tl-lg",
+              i === rows.length - 1 && "rounded-bl-lg",
+            )}
+          >
+            {row.label}
+          </div>
+          {result.cars.map((c, idx) => (
+            <div
+              key={c.car_variant_id}
+              className={cn(
+                "px-5 py-4 font-sans text-[14px] font-semibold text-on-surface self-center",
+                rowBg,
+                i === 0 && idx === nCols - 1 && "rounded-tr-lg",
+                i === rows.length - 1 && idx === nCols - 1 && "rounded-br-lg",
+              )}
+            >
+              {row.pick(c) || t.emptyCell}
+            </div>
+          ))}
+        </Fragment>
+      );
+    });
+  };
+
+  /**
+   * Equipment rows are yes/no, with a category grouping header. Rendered
+   * into the same grid so the column widths stay aligned with the rest of
+   * the spec sections.
+   */
+  const renderEquipmentRows = () => {
+    if (!result) return null;
+    const rows = filteredEquipmentRows;
+    if (!rows.length) {
+      return (
+        <div className="col-span-full rounded-lg bg-surface-container-low px-6 py-10 text-center font-sans text-[14px] font-medium text-on-surface-variant">
+          {t.equipmentEmptyFiltered}
         </div>
-      </>
-    );
+      );
+    }
+    return rows.map((row, i) => {
+      const stripe = i % 2 === 1;
+      const rowBg = stripe ? "bg-surface-container" : "bg-surface-container-low";
+      return (
+        <Fragment key={`${row.category}-${row.feature}-${i}`}>
+          <div
+            className={cn(
+              "px-5 py-4 self-center",
+              rowBg,
+              i === 0 && "rounded-tl-lg",
+              i === rows.length - 1 && "rounded-bl-lg",
+            )}
+          >
+            <p className="superscript text-on-surface-variant">{row.category}</p>
+            <p className="font-sans text-[13px] font-semibold text-on-surface mt-1">{row.feature}</p>
+          </div>
+          {result.cars.map((c, idx) => {
+            const v = row.by_variant_id[String(c.car_variant_id)];
+            const yes = v === true;
+            const no = v === false;
+            return (
+              <div
+                key={c.car_variant_id}
+                className={cn(
+                  "px-5 py-4 self-center flex items-center justify-center",
+                  rowBg,
+                  i === 0 && idx === nCols - 1 && "rounded-tr-lg",
+                  i === rows.length - 1 && idx === nCols - 1 && "rounded-br-lg",
+                )}
+              >
+                {yes ? (
+                  <span
+                    aria-label={t.yes}
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-full primary-gradient text-white shadow-pop"
+                  >
+                    <Check className="w-4 h-4" strokeWidth={2.5} />
+                  </span>
+                ) : no ? (
+                  <span
+                    aria-label={t.no}
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-surface-container-high text-mute"
+                  >
+                    <Minus className="w-4 h-4" strokeWidth={1.75} />
+                  </span>
+                ) : (
+                  <span className="text-outline-variant">—</span>
+                )}
+              </div>
+            );
+          })}
+        </Fragment>
+      );
+    });
   };
 
   return (
-    <div className="min-h-screen bg-[#E0E7D7] pt-20 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto w-full min-w-0">
-        <Link
-          href={`/${locale}/recommendations`}
-          className="inline-flex items-center gap-1 text-sm text-[#5a7a52] hover:underline mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t.back}
-        </Link>
+    <div className="bg-canvas px-4 sm:px-6 lg:px-10 pt-8 pb-20 min-h-screen">
+      <div className="max-w-[1280px] mx-auto w-full min-w-0">
+        {/* Page header */}
+        <header className="mb-8">
+          <h1 className="font-heading text-display-sm text-on-surface tracking-[-0.02em]">
+            {t.title}
+          </h1>
+          {ids.length > 0 && (
+            <button
+              type="button"
+              onClick={clear}
+              className="mt-2 font-sans text-[13px] font-medium text-on-surface-variant hover:text-primary transition-colors duration-300"
+            >
+              {t.clear}
+            </button>
+          )}
+        </header>
 
-        <h1 className="text-3xl font-bold text-[#2d3a2a] italic font-serif mb-2">{t.title}</h1>
-        <p className="text-sm text-[#2d3a2a]/70 mb-6">
-          {interpolate(t.subtitle, { max: MAX_COMPARE })}
-        </p>
-
-        <div className="rounded-xl border border-[#B7C396]/40 bg-white/90 p-4 mb-6">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            {ids.length === 0 && <span className="text-sm text-[#2d3a2a]/60">{t.noSelection}</span>}
-            {ids.map((id) => (
-              <span
-                key={id}
-                className="inline-flex items-center gap-1 rounded-full bg-[#E0E7D7] pl-3 pr-1 py-1 text-sm font-mono text-[#2d3a2a]"
-              >
-                #{id}
-                <button
-                  type="button"
-                  onClick={() => remove(id)}
-                  className="rounded-full p-1 hover:bg-[#5a7a52]/20"
-                  aria-label={t.removeChipAria}
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </span>
-            ))}
-          </div>
-          <button type="button" onClick={clear} className="text-xs text-[#2d3a2a]/60 hover:text-[#2d3a2a] underline">
-            {t.clear}
-          </button>
-        </div>
-
+        {/* ── Empty / one-car / error states ────────────────────────────── */}
         {ids.length === 0 && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950 mb-6 space-y-2">
-            <p>{t.needTwo}</p>
-            <Link href={`/${locale}/recommendations`} className="inline-block font-semibold text-[#5a7a52] hover:underline">
-              {t.needTwoCta}
-            </Link>
+          <div className="rounded-xl bg-surface-container-low px-8 py-20 flex flex-col items-center gap-6">
+            <p className="font-heading text-[18px] font-semibold text-on-surface text-center tracking-[-0.01em]">
+              {t.needTwo}
+            </p>
+            <Button variant="primary" size="lg" onClick={() => setModalOpen(true)}>
+              {t.addVehicle}
+            </Button>
           </div>
         )}
 
-        {ids.length === 1 && (
-          <div className="rounded-xl border-2 border-[#5a7a52]/40 bg-[#5a7a52]/5 px-4 py-4 mb-6">
-            <p className="font-semibold text-[#2d3a2a]">{t.oneCarTitle}</p>
-            <p className="text-sm text-[#2d3a2a]/80 mt-1">{t.oneCarBody}</p>
-            <Link href={`/${locale}/recommendations`} className="inline-block mt-3 text-sm font-semibold text-[#5a7a52] hover:underline">
-              {t.needTwoCta}
-            </Link>
+        {ids.length === 1 && !loading && (
+          <div className="rounded-lg bg-surface-container-low px-6 py-6 mb-8">
+            <p className="font-heading text-[18px] font-semibold text-on-surface tracking-[-0.01em]">
+              {t.oneCarTitle}
+            </p>
+            <p className="font-sans text-[14px] font-medium text-on-surface-variant mt-2">
+              {t.oneCarBody}
+            </p>
+            <div className="mt-4">
+              <Button variant="secondary" size="sm" onClick={() => setModalOpen(true)}>
+                {t.addAnother}
+              </Button>
+            </div>
           </div>
         )}
 
         {loading && (
-          <div className="flex items-center gap-2 text-[#2d3a2a] mb-4">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            {t.loading}
+          <div className="flex items-center gap-2 text-on-surface-variant mb-6">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            <span className="font-sans text-[14px] font-medium">{t.loading}</span>
           </div>
         )}
 
-        {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 mb-6">{error}</div>}
+        {error && (
+          <div className="rounded-lg bg-error-container px-4 py-3 font-sans text-[14px] font-medium text-error-on-container mb-8">
+            {error}
+          </div>
+        )}
 
+        {/* ── Overview strip (top pick + narrative) ─────────────────────── */}
         {result && !loading && (
           <>
-            <div className="flex flex-wrap gap-1.5 mb-6 border-b border-[#B7C396]/40 pb-1 overflow-x-auto">
-              {tabs.map(({ id, label }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setTab(id)}
-                  className={`rounded-t-lg px-3 py-2 text-sm font-medium transition-colors shrink-0 ${
-                    tab === id ? "bg-white text-[#5a7a52] border border-b-0 border-[#B7C396]/40 shadow-sm" : "text-[#2d3a2a]/60 hover:text-[#2d3a2a]"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            {topPick && (
+              <TopPickLockup
+                pick={topPick}
+                badge={t.topPickBadge}
+                subtitlePattern={t.topPickSubtitle}
+                dimensionsLabel={t.topPickDimensions}
+              />
+            )}
 
-            {tab === "summary" && (
-              <div className="space-y-8">
-                <section>
-                  <h2 className="text-lg font-semibold text-[#2d3a2a] mb-3">{t.summaryNarrative}</h2>
-                  <ul className="space-y-3">
-                    {result.summary_comments.map((line, i) => (
-                      <li key={i} className="flex gap-3 text-sm text-[#2d3a2a]/90 leading-relaxed">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#5a7a52]/20 text-[#5a7a52] text-xs font-bold flex items-center justify-center">
-                          {i + 1}
-                        </span>
-                        <span>{line}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
+            {result.summary_comments.length > 0 && (
+              <section className="mb-12">
+                <h2 className="font-heading text-[20px] font-semibold text-on-surface mb-5 tracking-[-0.018em]">
+                  {t.summaryNarrative}
+                </h2>
+                <ul className="space-y-3 max-w-[860px]">
+                  {result.summary_comments.map((line, i) => (
+                    <li
+                      key={i}
+                      className="flex gap-3 font-sans text-[14px] font-medium text-on-surface leading-relaxed"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="flex-shrink-0 w-6 h-6 rounded-full primary-gradient text-white text-[11px] font-bold flex items-center justify-center tabular shadow-pop"
+                      >
+                        {i + 1}
+                      </span>
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
-                {highlights.length > 0 && (
-                  <section>
-                    <h2 className="text-lg font-semibold text-[#2d3a2a] mb-3">{t.summaryHighlights}</h2>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {highlights.map((h) => (
-                        <div key={h.areaKey} className="rounded-xl border border-[#5a7a52]/25 bg-white p-4 shadow-sm">
-                          <p className="text-xs font-bold uppercase tracking-wider text-[#5a7a52] mb-1">{h.label}</p>
-                          <p className="text-base font-semibold text-[#2d3a2a]">{h.leaderShortName}</p>
-                          <p className="text-xs text-[#2d3a2a]/65 mt-1">{h.detail}</p>
-                        </div>
-                      ))}
+            {highlights.length > 0 && (
+              <section className="mb-14">
+                <h2 className="font-heading text-[20px] font-semibold text-on-surface mb-5 tracking-[-0.018em]">
+                  {t.summaryHighlights}
+                </h2>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {highlights.map((h) => (
+                    <div
+                      key={h.areaKey}
+                      className="rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors duration-300 p-4"
+                    >
+                      <p className="superscript text-on-surface-variant mb-1.5">{h.label}</p>
+                      <p className="font-heading text-[16px] font-semibold text-on-surface tracking-[-0.015em]">
+                        {h.leaderShortName}
+                      </p>
+                      <p className="font-sans text-[12.5px] font-medium text-on-surface-variant mt-1">
+                        {h.detail}
+                      </p>
                     </div>
-                  </section>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ── Apple-style vertical comparison grid ─────────────────── */}
+            <div className="overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10">
+              <div
+                className="min-w-fit grid gap-x-3 gap-y-1 items-stretch"
+                style={{ gridTemplateColumns: gridTemplate }}
+              >
+                {/* ── Header row: empty cell + N column headers ──────── */}
+                <div aria-hidden="true" />
+                {result.cars.map((c) => {
+                  const isPick = topPick?.leaderCarId === c.car_variant_id;
+                  return (
+                    <ColumnHeader
+                      key={c.car_variant_id}
+                      car={c}
+                      isPick={isPick}
+                      topPickLabel={t.topPickBadge}
+                      changeLabel={t.columnChange}
+                      removeLabel={t.columnRemove}
+                      segmentLabelText={segmentLabel(c.segment, locale) || c.segment}
+                      onChange={() => {
+                        remove(c.car_variant_id);
+                        setModalOpen(true);
+                      }}
+                      onRemove={() => remove(c.car_variant_id)}
+                    />
+                  );
+                })}
+
+                {/* Add-column tile appears inline when under the cap */}
+                {result.cars.length < MAX_COMPARE && (
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(true)}
+                    className="rounded-lg ghost-border flex flex-col items-center justify-center gap-2 px-4 py-8 min-h-[280px] text-on-surface-variant hover:text-primary transition duration-300"
+                  >
+                    <Plus className="w-5 h-5" strokeWidth={1.75} />
+                    <span className="font-sans text-[13px] font-semibold">{t.addVehicle}</span>
+                  </button>
                 )}
 
-                <section>
-                  <h2 className="text-lg font-semibold text-[#2d3a2a] mb-3">{t.cars}</h2>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {result.cars.map((c) => (
-                      <div key={c.car_variant_id} className="rounded-xl border border-[#B7C396]/40 bg-white p-4">
-                        <h3 className="font-semibold text-[#2d3a2a]">{c.display_name}</h3>
-                        <p className="text-xs text-[#2d3a2a]/60 mt-1">
-                          {c.segment} · {c.year}
-                        </p>
+                {/* ── Overview section ────────────────────────────────── */}
+                <SectionBand>{t.sectionOverview}</SectionBand>
+                {renderOverviewRows()}
+
+                {/* ── Performance ─────────────────────────────────────── */}
+                <SectionBand>{t.sectionPerformance}</SectionBand>
+                {perfLeader && <LeaderCard leader={perfLeader} />}
+                {renderSpecRows(result.performance_comparison as Record<string, Record<string, unknown>>)}
+
+                {/* ── Technical ──────────────────────────────────────── */}
+                <SectionBand>{t.sectionTechnical}</SectionBand>
+                {techLeader && <LeaderCard leader={techLeader} />}
+                {renderSpecRows(result.technical_comparison as Record<string, Record<string, unknown>>)}
+
+                {/* ── Market ─────────────────────────────────────────── */}
+                <SectionBand>{t.sectionMarket}</SectionBand>
+                {marketLeader && <LeaderCard leader={marketLeader} />}
+                {renderSpecRows(result.market_comparison as Record<string, Record<string, unknown>>)}
+
+                {/* ── Equipment ───────────────────────────────────────── */}
+                {equipment?.rows && equipment.rows.length > 0 && (
+                  <>
+                    <SectionBand>{t.sectionEquipment}</SectionBand>
+
+                    {/* Equipment filter row — spans all columns */}
+                    <div className="col-span-full mb-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between rounded-lg bg-surface-container-low px-4 py-3">
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <span className="font-sans text-[13px] font-medium text-on-surface-variant">
+                          {interpolate(t.equipmentSummary, {
+                            cars: result.cars.length,
+                            advantages: equipmentAdvantageCount,
+                          })}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
-            )}
-
-            {tab === "technical" && renderPivot(result.technical_comparison as Record<string, Record<string, unknown>>, techLeader)}
-            {tab === "performance" && renderPivot(result.performance_comparison as Record<string, Record<string, unknown>>, perfLeader)}
-            {tab === "market" && renderPivot(result.market_comparison as Record<string, Record<string, unknown>>, marketLeader)}
-
-            {tab === "equipment" && result && equipment?.rows && (
-              <div className="space-y-4 min-w-0">
-                <p className="text-sm font-medium text-[#2d3a2a]">
-                  {interpolate(t.equipmentSummary, { cars: result.cars.length, advantages: equipmentAdvantageCount })}
-                </p>
-
-                {equipLeader && <TabLeaderBox t={t} leader={equipLeader} />}
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between rounded-xl border border-[#B7C396]/30 bg-white/80 px-4 py-3">
-                  <label className="inline-flex items-center gap-2 text-sm text-[#2d3a2a] cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={equipmentOnlyDiff}
-                      onChange={(e) => setEquipmentOnlyDiff(e.target.checked)}
-                      className="rounded border-[#B7C396] text-[#5a7a52] focus:ring-[#5a7a52]"
-                    />
-                    {t.equipmentOnlyDiff}
-                  </label>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold text-[#2d3a2a]/60">{t.equipmentCategoryLabel}</span>
-                    <select
-                      value={equipmentCategory}
-                      onChange={(e) => setEquipmentCategory(e.target.value)}
-                      className="text-sm rounded-lg border border-[#B7C396]/60 bg-white px-3 py-2 text-[#2d3a2a] min-w-[10rem]"
-                    >
-                      <option value="">{t.equipmentCategoryAll}</option>
-                      {equipmentCategories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto overscroll-x-contain rounded-xl border border-[#B7C396]/30 bg-white shadow-sm max-w-full touch-pan-x">
-                  <table className="min-w-[320px] w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[#B7C396]/30 bg-[#E0E7D7]/60">
-                        <th className="text-left p-2.5 min-h-[2.75rem] align-middle font-semibold text-[#2d3a2a] sticky left-0 bg-[#E0E7D7]/95 z-10 shadow-[2px_0_6px_-2px_rgba(45,58,42,0.08)]">
-                          {t.equipmentCategory}
-                        </th>
-                        <th className="text-left p-2.5 min-h-[2.75rem] align-middle font-semibold text-[#2d3a2a] min-w-[120px]">
-                          {t.equipmentFeature}
-                        </th>
-                        {result.cars.map((c) => (
-                          <th key={c.car_variant_id} className="text-center p-2.5 min-h-[2.75rem] align-middle font-semibold text-[#2d3a2a] min-w-[96px]">
-                            <span className="line-clamp-2">{c.brand}</span>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredEquipmentRows.length === 0 ? (
-                        <tr>
-                          <td colSpan={2 + result.cars.length} className="p-6 text-center text-sm text-[#2d3a2a]/60">
-                            {t.equipmentEmptyFiltered}
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredEquipmentRows.map((row, idx) => (
-                          <tr key={`${row.category}-${row.feature}-${idx}`} className="border-b border-[#B7C396]/15 hover:bg-[#f7f9f4]/80">
-                            <td className="p-2.5 min-h-[2.75rem] align-middle text-xs text-[#2d3a2a]/75 sticky left-0 bg-white/98 z-10 shadow-[2px_0_6px_-2px_rgba(45,58,42,0.06)]">
-                              {row.category}
-                            </td>
-                            <td className="p-2.5 min-h-[2.75rem] align-middle text-[#2d3a2a] font-medium">{row.feature}</td>
-                            {result.cars.map((c) => {
-                              const v = row.by_variant_id[String(c.car_variant_id)];
-                              const yes = v === true;
-                              const no = v === false;
-                              return (
-                                <td key={c.car_variant_id} className="p-2.5 min-h-[2.75rem] align-middle text-center">
-                                  {yes ? (
-                                    <span className="inline-flex rounded-full bg-[#5a7a52]/15 text-[#5a7a52] px-2 py-1 text-xs font-semibold leading-none">
-                                      {t.yes}
-                                    </span>
-                                  ) : no ? (
-                                    <span className="inline-flex rounded-full bg-gray-100 text-gray-600 px-2 py-1 text-xs leading-none">
-                                      {t.no}
-                                    </span>
-                                  ) : (
-                                    <span className="text-gray-300">—</span>
-                                  )}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))
-                      )}
-                      {equipment.truthy_counts_by_variant_id && (
-                        <tr className="bg-[#5a7a52]/10 font-semibold border-t-2 border-[#5a7a52]/30">
-                          <td className="p-2.5 sticky left-0 bg-[#eef4ec] z-10 shadow-[2px_0_6px_-2px_rgba(45,58,42,0.06)]" colSpan={2}>
-                            {t.truthyCount}
-                          </td>
-                          {result.cars.map((c) => (
-                            <td key={c.car_variant_id} className="p-2.5 text-center tabular-nums text-[#2d3a2a] align-middle">
-                              {equipment.truthy_counts_by_variant_id?.[String(c.car_variant_id)] ?? "—"}
-                            </td>
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <label className="inline-flex items-center gap-2 font-sans text-[13px] font-medium text-on-surface cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={equipmentOnlyDiff}
+                            onChange={(e) => setEquipmentOnlyDiff(e.target.checked)}
+                            className="rounded-sm border-outline-variant text-primary focus:ring-primary"
+                          />
+                          {t.equipmentOnlyDiff}
+                        </label>
+                        <select
+                          value={equipmentCategory}
+                          onChange={(e) => setEquipmentCategory(e.target.value)}
+                          className="font-sans text-[13px] font-medium rounded-md bg-surface-container px-3 py-2 text-on-surface focus:outline-none focus:shadow-focus duration-300"
+                        >
+                          <option value="">{t.equipmentCategoryAll}</option>
+                          {equipmentCategories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
                           ))}
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                        </select>
+                      </div>
+                    </div>
+
+                    {equipLeader && <LeaderCard leader={equipLeader} />}
+
+                    {renderEquipmentRows()}
+
+                    {/* Truthy-count footer row — spans all cars */}
+                    {equipment.truthy_counts_by_variant_id && (
+                      <>
+                        <div className="px-5 py-4 rounded-bl-lg bg-surface-container-highest font-sans text-[11px] font-semibold text-on-surface uppercase tracking-[0.06em] self-center">
+                          {t.truthyCount}
+                        </div>
+                        {result.cars.map((c, idx) => (
+                          <div
+                            key={c.car_variant_id}
+                            className={cn(
+                              "px-5 py-4 bg-surface-container-highest font-heading text-[16px] font-bold text-on-surface tabular self-center text-center",
+                              idx === nCols - 1 && "rounded-br-lg",
+                            )}
+                          >
+                            {equipment.truthy_counts_by_variant_id?.[String(c.car_variant_id)] ?? "—"}
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </>
+                )}
               </div>
-            )}
+            </div>
           </>
         )}
       </div>
+
+      <VehicleSelectionModal open={modalOpen} onClose={() => setModalOpen(false)} locale={locale} />
     </div>
   );
 }

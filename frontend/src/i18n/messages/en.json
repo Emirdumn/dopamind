@@ -10,13 +10,20 @@
     "loading": "Loading..."
   },
   "home": {
-    "hero_title": "Choose Your Car\nthe Smart Way.",
-    "hero_subtitle": "Add vehicles, compare side by side, make the right decision.",
-    "hero_cta_primary": "Compare Vehicles",
-    "hero_cta_secondary": "My Garage",
-    "step1_label": "Add Vehicle",
-    "step2_label": "Compare",
-    "step3_label": "Decide"
+    "hero_title_part1": "Choose Your",
+    "hero_title_part2": "Car Wisely.",
+    "hero_subtitle": "Precision engineering meets editorial elegance. Explore, compare, and discover the definitive automotive experience tailored for the discerning driver.",
+    "hero_search_placeholder": "Enter make, model, or category…",
+    "hero_search_cta": "Discover",
+    "hero_trending_label": "Trending",
+    "popular_title": "Popular Models",
+    "popular_subtitle": "Curated excellence from the showroom floor.",
+    "popular_view_all": "View All",
+    "popular_view_details": "View Details",
+    "popular_starting": "Starting",
+    "compare_card_title": "Compare Head-to-Head",
+    "compare_card_body": "Put your top choices side-by-side. Analyze performance metrics, premium features, and design language in deep detail.",
+    "compare_card_cta": "Start Comparison"
   },
   "footer": {
     "tagline": "Car comparison & recommendation platform.",
@@ -49,7 +56,15 @@
     "recommendations": {
       "badge": "ArabaIQ",
       "title": "Car recommendations",
-      "subtitle": "Ranked suggestions. total_candidates: pool after budget (1.25×) and optional strict_required; returned: after limit.",
+      "subtitle": "Pick a scenario, we'll match the right car.",
+      "welcomeTitle": "Pick a scenario, we'll match the right car.",
+      "welcomeSubtitle": "No long form. Pick a scenario, optionally filter by segment — we handle the rest.",
+      "presetsHeading": "Start with a scenario",
+      "presetsSubtitle": "Presets fill every preference in one click. Refine later as much as you like.",
+      "segmentHeading": "Segment (optional)",
+      "segmentSelected": "segments selected",
+      "segmentClear": "Clear",
+      "resultsHeading": "Your recommendations",
       "compareTray": "Compare tray",
       "submit": "Get recommendations",
       "submitLoading": "Running…",
@@ -155,6 +170,18 @@
         "low_maintenance": {
           "title": "Low maintenance cost",
           "description": "High maintenance sensitivity, economy and resale"
+        },
+        "low_tax": {
+          "title": "Low tax bracket",
+          "description": "Small-displacement engines — Turkey ÖTV-friendly picks"
+        },
+        "first_car": {
+          "title": "First car",
+          "description": "Affordable, easy to maintain, strong resale value"
+        },
+        "long_distance": {
+          "title": "Long distance",
+          "description": "Intercity comfort and fuel efficiency"
         }
       },
       "featureLabels": {
@@ -213,7 +240,23 @@
       "equipmentCategoryAll": "All categories",
       "equipmentCategoryLabel": "Category",
       "equipmentSummary": "{cars} cars · {advantages} unique advantages (only one has «yes»)",
-      "equipmentEmptyFiltered": "No rows match the current filters."
+      "equipmentEmptyFiltered": "No rows match the current filters.",
+      "topPickBadge": "ArabaIQ Top Pick",
+      "topPickSubtitle": "Leads {wins} / {total} categories",
+      "topPickDimensions": "Categories led",
+      "addVehicle": "Add vehicle",
+      "addAnother": "+ Add vehicle",
+      "sectionOverview": "Overview",
+      "sectionPerformance": "Performance",
+      "sectionTechnical": "Technical",
+      "sectionMarket": "Market",
+      "sectionEquipment": "Equipment",
+      "columnChange": "Change",
+      "columnRemove": "Remove",
+      "columnSegment": "Segment",
+      "columnYear": "Year",
+      "columnTrim": "Trim",
+      "emptyCell": "—"
     }
   }
 }
