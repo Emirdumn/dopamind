@@ -10,6 +10,35 @@ local değişiklik → git push → GitHub Actions → VPS'te rebuild → canlı
 
 ---
 
+## ⚡ Hızlı yol (tavsiye) — 3 otomasyon script'i
+
+Elle 7 adım yapmak yerine bu 3 script ile ~5 dk'da kurulum:
+
+```bash
+# ── 1. VPS'te (bir kere) ──────────────────────────────────────────────
+ssh root@<VPS_IP>
+curl -fsSL https://raw.githubusercontent.com/Emirdumn/dopamind/araba-iq/deploy/bootstrap-vps.sh | bash
+# → çıktıda sana 4 GitHub Secret değeri verecek, kopyala
+
+# ── 2. Local makinende ────────────────────────────────────────────────
+./deploy/setup-github-secrets.sh
+# → VPS_HOST / VPS_USER / VPS_SSH_KEY / VPS_PROJECT_PATH otomatik
+
+# ── 3. Cloudflare (opsiyonel, API token ile) ─────────────────────────
+export CF_API_TOKEN="..."  # https://dash.cloudflare.com/profile/api-tokens
+export VPS_IP="1.2.3.4"
+./deploy/setup-cloudflare.sh
+# → DNS A + SSL flexible + Always HTTPS otomatik
+
+# ── 4. Doğrula ────────────────────────────────────────────────────────
+./deploy/verify.sh
+```
+
+Altındaki "Manuel yol" bölümü bu script'lerin ne yaptığını tek tek açıklar —
+script'lerde bir şey patlarsa rehber olarak kullan.
+
+---
+
 ## 0. Genel mimari
 
 ```
@@ -38,6 +67,8 @@ local değişiklik → git push → GitHub Actions → VPS'te rebuild → canlı
 ```
 
 ---
+
+## Manuel yol
 
 ## 1. VPS ön koşulları (bir kere)
 
