@@ -1,0 +1,78 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  ArabaIQ — production docker-compose (VPS)
+#
+#  Expectations:
+#    • VPS already runs nginx for *other* sites. This stack ONLY binds to
+#      127.0.0.1 (loopback) so nothing here is exposed to the public
+#      internet directly. The host nginx (see deploy/nginx-arabaiq.conf)
+#      reverse-proxies arabaiq.com into these loopback ports.
+#    • Cloudflare is in front of arabaiq.com providing SSL termination
+#      (Flexible mode), so nginx on the VPS speaks plain HTTP on :80.
+#    • .env.production (in repo root on the VPS, NOT committed) provides
+#      ARABA_IQ_DB_PASSWORD, OTOAPI_KEY, etc.
+#
+#  Ports bound on host (all loopback-only):
+#    127.0.0.1:3001 → frontend (Next.js)
+#    127.0.0.1:8101 → API     (FastAPI/uvicorn)
+#    (Postgres is NOT exposed to host — internal docker network only)
+#
+#  Usage on VPS:
+#      cd /opt/arabaiq
+#      docker compose -f docker-compose.prod.yml --env-file .env.production \
+#          up -d --build
+# ═══════════════════════════════════════════════════════════════════════
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: araba_iq
+      POSTGRES_USER: araba_iq
+      POSTGRES_PASSWORD: ${ARABA_IQ_DB_PASSWORD:?ARABA_IQ_DB_PASSWORD is required}
+    volumes:
+      - araba_iq_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U araba_iq -d araba_iq"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # No published ports — the API reaches db over the internal network.
+
+  api:
+    build:
+      context: ./araba-iq-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://araba_iq:${ARABA_IQ_DB_PASSWORD}@db:5432/araba_iq
+      CORS_ORIGINS: "https://arabaiq.com,https://www.arabaiq.com"
+      API_V1_PREFIX: /api/v1
+      PROJECT_NAME: ArabaIQ
+    ports:
+      - "127.0.0.1:8101:8100"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* bakes into the static bundle at build-time.
+        # Same-origin /api means no CORS in the browser and no leaking
+        # internal API URLs.
+        NEXT_PUBLIC_ARABAIQ_API_URL: https://arabaiq.com/api/v1
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      # Server-only secrets (read at request time)
+      OTOAPI_KEY: ${OTOAPI_KEY:-}
+    ports:
+      - "127.0.0.1:3001:3000"
+
+volumes:
+  araba_iq_db:
+    name: araba_iq_db_prod

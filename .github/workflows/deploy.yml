@@ -1,0 +1,59 @@
+name: Deploy araba-iq to VPS
+
+# ───────────────────────────────────────────────────────────────────────
+#  Triggers on every push to the `araba-iq` branch. SSHes into the VPS,
+#  pulls the latest commit, rebuilds Docker images, and rolls the stack
+#  with zero-ish downtime (docker compose up -d, same container names).
+#
+#  Required GitHub Secrets (Settings → Secrets → Actions):
+#    VPS_HOST            e.g. 203.0.113.42  (or a hostname)
+#    VPS_USER            typically "root"
+#    VPS_SSH_KEY         the PRIVATE half of an ed25519 keypair whose
+#                        PUBLIC half is in /root/.ssh/authorized_keys on
+#                        the VPS. Generate once with:
+#                            ssh-keygen -t ed25519 -C "github-deploy"
+#    VPS_PROJECT_PATH    absolute path on the VPS, e.g. /opt/arabaiq
+#
+#  The workflow never uploads env files — .env.production must already
+#  exist at $VPS_PROJECT_PATH on the server (see deploy/DEPLOY.md).
+# ───────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches:
+      - araba-iq
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-arabaiq
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into VPS and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.VPS_PROJECT_PATH }}"
+
+            echo "▶ Fetching latest commit…"
+            git fetch --all --prune
+            git checkout araba-iq
+            git reset --hard origin/araba-iq
+
+            echo "▶ Building and starting containers…"
+            docker compose -f docker-compose.prod.yml --env-file .env.production pull || true
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+
+            echo "▶ Pruning unused images to save disk…"
+            docker image prune -f
+
+            echo "▶ Deploy finished at $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            docker compose -f docker-compose.prod.yml ps

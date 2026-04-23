@@ -7,6 +7,8 @@ __pycache__/
 venv/
 .venv/
 .env
+.env.production
+.env.production.local
 db.sqlite3
 # Node
 node_modules/

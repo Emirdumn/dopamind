@@ -1,4 +1,11 @@
-node_modules/
-.next/
-.env.local
+.next
+node_modules
 .git
+.env
+.env.local
+.env.production
+Dockerfile
+.dockerignore
+README.md
+npm-debug.log
+.DS_Store
